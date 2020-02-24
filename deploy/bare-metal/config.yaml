@@ -1,0 +1,30 @@
+version: v0.0.1
+nebulaItems:
+  - instanceName: metad-0
+    endpointIP: 192.168.0.102
+    endpointPort: 32787
+    nebulaType: metad
+  - instanceName: metad-1
+    endpointIP: 192.168.0.102
+    endpointPort: 32783
+    nebulaType: metad
+  - instanceName: metad-2
+    endpointIP: 192.168.0.102
+    endpointPort: 32785
+    nebulaType: metad
+  - instanceName: graphd-0
+    endpointIP: 192.168.0.102
+    endpointPort: 32793
+    nebulaType: graphd
+  - instanceName: storaged-0
+    endpointIP: 192.168.0.102
+    endpointPort: 32799
+    nebulaType: storaged
+  - instanceName: storaged-1
+    endpointIP: 192.168.0.102
+    endpointPort: 32789
+    nebulaType: storaged
+  - instanceName: storaged-2
+    endpointIP: 192.168.0.102
+    endpointPort: 32797
+    nebulaType: storaged
