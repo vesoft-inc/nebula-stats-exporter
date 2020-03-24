@@ -1,11 +1,10 @@
-# 非 k8s 环境下部署监控使用文档
+# Deployment Monitoring for Non-k8s Environments
 
-## 编写 config.yaml 文件
+## Edit config.yaml File
 
-需要在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示
-组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，
-`nebulaType` 用于指定该组件是那种类型的 nebula 组件。
-例子如下：
+You need to add the nebula monitor components under `nebulaItems` in the `config.yaml` file. `instanceName` marks the component name. `endpointIP`, `endpointPort` and `nebulaType` specify the component IP, HTTP port and type respectively.
+
+Here is an example:
 
 ```yaml
 nebulaItems:
@@ -15,21 +14,20 @@ nebulaItems:
     nebulaType: metad
 ```
 
-### 运行 nebula-stats-exporter
+### Run nebula-stats-exporter
 
-直接运行：
+Run directly:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {path to config.yaml}:/config \
  vesoft/nebula-stats-exporter:v0.0.1  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
-### 配置 prometheus
+### Configure Prometheus
 
-需要在 `prometheus.yaml` 中配置好 nebula-stats-exporter，这里需要使用静态配置，
-需要在 `static_configs` 中指定 nebula-stats-exporter 的 metrics endpoints。
+You need to configure nebula-stats-exporter in the `prometheus.yaml` file. Here we use the static configs. Please specify the metrics endpoints for nebula-stats-exporter in `static_configs`.
 
-如下面的例子：
+Here is an example:
 
 ```yaml
 global:
@@ -44,19 +42,19 @@ scrape_configs:
       - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints
 ```
 
-然后运行 prometheus：
+Then run prometheus:
 
 ```bash
 docker run -d --name=prometheus --restart=always \
 -p 9090:9090 -v {path to prometheus config}:/etc/prometheus/ prom/prometheus
 ```
 
-### 配置 grafana
+### Configure grafana
 
-先启动 grafana：
+First run grafana:
 
 ```bash
 docker run -d -p 3000:3000 grafana/grafana
 ```
 
-然后将 `deploy/grafana/bare-metal/nebula-grafana.json` 导入到 nebula 的 dashboard 中。
+Then import the `deploy/grafana/bare-metal/nebula-grafana.json` to nebula's dashboard.
