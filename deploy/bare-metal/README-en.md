@@ -9,7 +9,7 @@ Here is an example:
 ```yaml
 nebulaItems:
   - instanceName: metad-0
-    endpointIP: 127.0.0.1 # Your local IP
+    endpointIP: 127.0.0.1 # nebula host IP
     endpointPort: 12000
     nebulaType: metad
 ```
@@ -39,7 +39,7 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: 'nebula-stats-exporter'
     static_configs:
-      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints # Your local IP
+      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints # nebula host IP
 ```
 
 Then run prometheus:
