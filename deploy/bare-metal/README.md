@@ -2,15 +2,13 @@
 
 ## 编写 config.yaml 文件
 
-需要在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示
-组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，
-`nebulaType` 用于指定该组件是那种类型的 nebula 组件。
+在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，`nebulaType` 用于指定该组件是那种类型的 nebula 组件。
 例子如下：
 
 ```yaml
 nebulaItems:
   - instanceName: metad-0
-    endpointIP: 127.0.0.1
+    endpointIP: 127.0.0.1 # nebula host IP
     endpointPort: 12000
     nebulaType: metad
 ```
@@ -20,14 +18,13 @@ nebulaItems:
 直接运行：
 
 ```bash
-docker run -d --restart=always -p 9100:9100 -v {path to config.yaml}:/config \
+docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
  vesoft/nebula-stats-exporter:v0.0.1  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
 ### 配置 prometheus
 
-需要在 `prometheus.yaml` 中配置好 nebula-stats-exporter，这里需要使用静态配置，
-需要在 `static_configs` 中指定 nebula-stats-exporter 的 metrics endpoints。
+在 `prometheus.yaml` 中配置好 nebula-stats-exporter，这里需要使用静态配置，并在 `static_configs` 中指定 nebula-stats-exporter 的 metrics endpoints。
 
 如下面的例子：
 
@@ -41,14 +38,14 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: 'nebula-stats-exporter'
     static_configs:
-      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints
+      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints # nebula host IP
 ```
 
 然后运行 prometheus：
 
 ```bash
 docker run -d --name=prometheus --restart=always \
--p 9090:9090 -v {path to prometheus config}:/etc/prometheus/ prom/prometheus
+-p 9090:9090 -v {directory to prometheus config}:/etc/prometheus/ prom/prometheus
 ```
 
 ### 配置 grafana

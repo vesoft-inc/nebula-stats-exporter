@@ -9,7 +9,7 @@ Here is an example:
 ```yaml
 nebulaItems:
   - instanceName: metad-0
-    endpointIP: 127.0.0.1
+    endpointIP: 127.0.0.1 # nebula host IP
     endpointPort: 12000
     nebulaType: metad
 ```
@@ -19,7 +19,7 @@ nebulaItems:
 Run directly:
 
 ```bash
-docker run -d --restart=always -p 9100:9100 -v {path to config.yaml}:/config \
+docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
  vesoft/nebula-stats-exporter:v0.0.1  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
@@ -39,14 +39,14 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: 'nebula-stats-exporter'
     static_configs:
-      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints
+      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints # nebula host IP
 ```
 
 Then run prometheus:
 
 ```bash
 docker run -d --name=prometheus --restart=always \
--p 9090:9090 -v {path to prometheus config}:/etc/prometheus/ prom/prometheus
+-p 9090:9090 -v {directory to prometheus config}:/etc/prometheus/ prom/prometheus
 ```
 
 ### Configure grafana
