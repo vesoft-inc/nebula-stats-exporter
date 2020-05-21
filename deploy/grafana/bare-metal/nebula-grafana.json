@@ -399,7 +399,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "nebula_graphd_insert_vertex_qps_sum_60",
+          "expr": "nebula_graphd_insert_vertex_qps_count_60",
           "interval": "60s",
           "refId": "A"
         }
@@ -1170,7 +1170,6 @@
   "timezone": "browser",
   "title": "nebula",
   "uid": "97I8NYLWk",
-  "version": 30
+  "version": 31
 }
-
 
