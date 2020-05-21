@@ -78,7 +78,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	secondaryLabels := []string{
-		"latency", "error_qps", "all_qps",
+		"latency", "error_qps", "all_qps", "qps",
 	}
 
 	thirdLabels := []string{
@@ -113,6 +113,14 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 		}
 	}
 
+	exporter.graphdMap["graphd_count"] = metrics{
+		MetricsType: "graphd_count",
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName("nebula", "graphd", "count"),
+			"", []string{"instanceName", "namespace", "instanceType"}, nil),
+	}
+
+
 	metadLabels := []string{
 		"heartbeat",
 	}
@@ -130,6 +138,13 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 				}
 			}
 		}
+	}
+
+	exporter.metadMap["metad_count"] = metrics{
+		MetricsType: "metad_count",
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName("nebula", "metad", "count"),
+			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
 
 	storagedLabels := []string{
@@ -154,6 +169,13 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 				}
 			}
 		}
+	}
+
+	exporter.storagedMap["storaged_count"] = metrics{
+		MetricsType: "storage_count",
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName("nebula", "storaged", "count"),
+			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
 
 	err := exporter.exporterMetricsRegistry.Register(exporter)
