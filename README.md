@@ -2,7 +2,7 @@
 
 ## 编写 config.yaml 文件
 
-在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，`nebulaType` 用于指定该组件是那种类型的 nebula 组件。
+在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，`nebulaType`用于指定该组件的服务类型: `metad`、`storaged` 或者 `graphd`。
 例子如下：
 
 ```yaml
@@ -56,4 +56,5 @@ docker run -d --name=prometheus --restart=always \
 docker run -d -p 3000:3000 grafana/grafana
 ```
 
-然后将 `deploy/grafana/bare-metal/nebula-grafana.json` 导入到 nebula 的 dashboard 中。
+然后将 [grafana.json](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/grafana/bare-metal/nebula-grafana.json) 导入到 nebula 的 dashboard 中。  
+![具体操作](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/dashboard-importer.gif)
