@@ -56,5 +56,4 @@ docker run -d --name=prometheus --restart=always \
 docker run -d -p 3000:3000 grafana/grafana
 ```
 
-然后将 [grafana.json](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/grafana/bare-metal/nebula-grafana.json) 导入到 nebula 的 dashboard 中。  
-![具体操作](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/dashboard-importer.gif)
+然后将 [grafana.json](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/grafana/bare-metal/nebula-grafana.json) 导入到 nebula 的 dashboard中。[具体操作](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/dashboard-importer.gif)
