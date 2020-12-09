@@ -1,9 +1,12 @@
 # 非 k8s 环境下部署监控使用文档
 
-## 编写 config.yaml 文件
+### 配置nebula-stats-exporter
 
-在 `config.yaml` 中的 `nebulaItems` 下添加监控的 nebula 组件，`instanceName` 用于标示组件名称，`endpointIP` 用于指定该组件的 IP 地址，`endpointPort` 用于指定该组件的 http 端口，`nebulaType` 用于指定该组件是那种类型的 nebula 组件。
-例子如下：
+在config.yaml中的nebulaItems下添加监控的nebula组件，instanceName用于标识组件名称，endpointIP用于指定该组件的 IP 地址，
+endpointPort用于指定该组件的 http 端口，nebulaType用于指定该组件的服务类型: metad、storaged 或者 graphd.  
+如果你是rpm方式部署nebula，那么endpointIP请填写主机IP地址，如果你是docker方式部署nebula，那么endpointIP请填写容器IP地址.
+  
+配置示例文件可参考deploy/bare-metal/config.yaml
 
 ```yaml
 nebulaItems:
@@ -15,18 +18,20 @@ nebulaItems:
 
 ### 运行 nebula-stats-exporter
 
-直接运行：
+直接运行： 
+
+-v参数指定docker运行时需要挂载的本地目录，-v /root/nebula:/config，将存放config.yaml的/root/nebula挂载到容器/config下.
 
 ```bash
-docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
+docker run -d --restart=always -p 9100:9100 -v {absolute directory of config.yaml}:/config \
  vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
 ### 配置 prometheus
 
-在 `prometheus.yaml` 中配置好 nebula-stats-exporter，这里需要使用静态配置，并在 `static_configs` 中指定 nebula-stats-exporter 的 metrics endpoints。
-
-如下面的例子：
+在prometheus.yaml中配置好nebula-stats-exporter的metrics endpoint，这里需要使用静态配置.
+ 
+配置示例文件可参考deploy/bare-metal/prometheus.yaml
 
 ```yaml
 global:
@@ -45,7 +50,7 @@ scrape_configs:
 
 ```bash
 docker run -d --name=prometheus --restart=always \
--p 9090:9090 -v {directory to prometheus config}:/etc/prometheus/ prom/prometheus
+-p 9090:9090 -v {absolute directory of prometheus.yaml}:/etc/prometheus/ prom/prometheus
 ```
 
 ### 配置 grafana
@@ -56,4 +61,7 @@ docker run -d --name=prometheus --restart=always \
 docker run -d -p 3000:3000 grafana/grafana
 ```
 
-然后将 `deploy/grafana/bare-metal/nebula-grafana.json` 导入到 nebula 的 dashboard 中。
+然后将 [grafana.json](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/grafana/bare-metal/nebula-grafana.json) 
+导入到nebula的dashboard中。
+    
+![](https://user-images.githubusercontent.com/51590253/84129424-860abb80-aa74-11ea-9208-c5a66cade0f8.gif)
