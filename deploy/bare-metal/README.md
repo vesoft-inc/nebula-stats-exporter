@@ -8,7 +8,7 @@
 ```yaml
 nebulaItems:
   - instanceName: metad-0
-    endpointIP: 127.0.0.1 # nebula host IP
+    endpointIP: 192.168.8.102 # nebula component ip address
     endpointPort: 12000
     nebulaType: metad
 ```
@@ -19,7 +19,7 @@ nebulaItems:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
- vesoft/nebula-stats-exporter:v0.0.1  --bare-metal --bare-metal-config-path=/config/config.yaml
+ vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
 ### 配置 prometheus
@@ -38,7 +38,7 @@ scrape_configs:
       - targets: ['localhost:9090']
   - job_name: 'nebula-stats-exporter'
     static_configs:
-      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints # nebula host IP
+      - targets: ['192.168.0.103:9100'] # nebula-stats-exporter metrics endpoints
 ```
 
 然后运行 prometheus：

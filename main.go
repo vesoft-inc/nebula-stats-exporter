@@ -1,18 +1,19 @@
 package main
 
 import (
-	"github.com/prometheus/common/version"
 	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
 
-	. "github.com/nebula-stats-exporter/exporter"
 	"github.com/prometheus/common/log"
-	"gopkg.in/yaml.v2"
-
+	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog"
+
+	"github.com/vesoft-inc/nebula-stats-exporter/exporter"
 )
 
 var restClient *kubernetes.Clientset
@@ -46,20 +47,20 @@ func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
-	var exporter *NebulaExporter
+	var nebulaExporter *exporter.NebulaExporter
 	if !*bareMetal {
 		config, err := rest.InClusterConfig()
 		if err != nil {
-			log.Fatalf("Can't Create K8s Client: %v", err)
+			klog.Fatalf("Can't Create K8s Client: %v", err)
 		}
 
 		restClient, err = kubernetes.NewForConfig(config)
 
 		if err != nil {
-			log.Fatalf("Can't Create K8s Client: %v", err)
+			klog.Fatalf("Can't Create K8s Client: %v", err)
 		}
 
-		exporter, err = NewNebulaExporter(*namespace, *listenAddr, restClient, StaticConfig{}, *maxRequest)
+		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *listenAddr, restClient, exporter.StaticConfig{}, *maxRequest)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -68,15 +69,15 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		config := StaticConfig{}
+		config := exporter.StaticConfig{}
 		yaml.Unmarshal(raw, &config)
 
-		exporter, err = NewNebulaExporter(*namespace, *listenAddr, nil, config, *maxRequest)
+		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *listenAddr, nil, config, *maxRequest)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-	log.Infof("Providing metrics at %s/metrics", *listenAddr)
-	log.Fatal(http.ListenAndServe(*listenAddr, exporter))
+	klog.Infof("Providing metrics at %s/metrics", *listenAddr)
+	klog.Fatal(http.ListenAndServe(*listenAddr, nebulaExporter))
 }

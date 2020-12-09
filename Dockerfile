@@ -1,5 +1,5 @@
-FROM busybox
+FROM centos:7.6.1810
 
-COPY nebula-exporter /
-RUN chmod +x /nebula-exporter
-ENTRYPOINT  [ "/nebula-exporter" ]
+COPY nebula-stats-exporter /
+RUN chmod +x /nebula-stats-exporter
+ENTRYPOINT  [ "/nebula-stats-exporter" ]
