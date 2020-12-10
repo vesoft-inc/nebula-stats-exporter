@@ -120,7 +120,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	thirdLabels := []string{
-		"count", "avg", "rate", "sum",
+		"count", "avg", "rate", "sum", "p99",
 	}
 
 	lastLabels := []string{
@@ -171,6 +171,11 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	for _, graphdLabel := range graphdLabels {
 		for _, secondaryLabel := range secondaryLabels {
 			for _, thirdLabel := range thirdLabels {
+				if thirdLabel == "p99" {
+					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
+						continue
+					}
+				}
 				for _, lastLabel := range lastLabels {
 					exporter.graphdMap["graph_"+graphdLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
 						MetricsType: thirdLabel,
@@ -238,6 +243,11 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	for _, storagedLabel := range storagedLabels {
 		for _, secondaryLabel := range secondaryLabels {
 			for _, thirdLabel := range thirdLabels {
+				if thirdLabel == "p99" {
+					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
+						continue
+					}
+				}
 				for _, lastLabel := range lastLabels {
 					exporter.storagedMap["storage_"+storagedLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
 						MetricsType: thirdLabel,
