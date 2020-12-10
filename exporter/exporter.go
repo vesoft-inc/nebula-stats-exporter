@@ -1,6 +1,8 @@
 package exporter
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -12,9 +14,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/prometheus/common/log"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/klog"
 )
 
 type metrics struct {
@@ -64,6 +66,42 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 	return metrics, nil
 }
 
+func getNebulaComponentStatus(ipAddress string, port int32, nebulaType string) ([]string, error) {
+	httpClient := http.Client{
+		Timeout: time.Second * 2,
+	}
+
+	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/status", ipAddress, port))
+
+	if err != nil {
+		return nil, err
+	}
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+
+	if err != nil {
+		return nil, err
+	}
+
+	type nebulaStatus struct {
+		GitInfoSha string `json:"git_info_sha"`
+		Status     string `json:"status"`
+	}
+
+	var status nebulaStatus
+	if err := json.Unmarshal(bytes, &status); err != nil {
+		return nil, err
+	}
+
+	countStr := fmt.Sprintf("%s_count=0", nebulaType)
+	if status.Status == "running" {
+		countStr = strings.Replace(countStr, "0", "1", 1)
+	}
+	statusMetrics := []string{countStr}
+
+	return statusMetrics, nil
+}
+
 func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientset,
 	config StaticConfig, maxRequests int) (*NebulaExporter, error) {
 	exporter := &NebulaExporter{
@@ -78,11 +116,11 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	secondaryLabels := []string{
-		"latency", "error_qps", "all_qps", "qps",
+		"latency", "error_qps", "qps",
 	}
 
 	thirdLabels := []string{
-		"count", "avg", "rate", "sum",
+		"count", "avg", "rate", "sum", "p99",
 	}
 
 	lastLabels := []string{
@@ -90,16 +128,54 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	graphdLabels := []string{
-		"create_edge", "fetch_vertices", "parse",
-		"create_tag", "all", "create_space",
-		"drop_space", "go", "insert_edge",
-		"storageClient", "use", "insert_vertex",
-		"show", "yield",
+		"storageClient",
+		"metaClient",
+		"all",
+		"use",
+		"show",
+		"find_path",
+		"create_edge",
+		"create_tag",
+		"create_snapshot",
+		"delete_edge",
+		"delete_vertices",
+		"update_vertex",
+		"update_edge",
+		"alter_tag",
+		"alter_edge",
+		"drop_tag",
+		"drop_edge",
+		"drop_space",
+		"drop_snapshot",
+		"insert_edge",
+		"insert_vertex",
+		"fetch_edges",
+		"fetch_vertices",
+		"describe_tag",
+		"describe_edge",
+		"describe_space",
+		"go",
+		"return",
+		"set",
+		"yield",
+		"group_by",
+		"order_by",
+		"limit",
+		"assignment",
+		"ingest",
+		"config",
+		"balance",
+		"download",
 	}
 
 	for _, graphdLabel := range graphdLabels {
 		for _, secondaryLabel := range secondaryLabels {
 			for _, thirdLabel := range thirdLabels {
+				if thirdLabel == "p99" {
+					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
+						continue
+					}
+				}
 				for _, lastLabel := range lastLabels {
 					exporter.graphdMap["graph_"+graphdLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
 						MetricsType: thirdLabel,
@@ -114,12 +190,11 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	exporter.graphdMap["graphd_count"] = metrics{
-		MetricsType: "graphd_count",
+		MetricsType: "count",
 		desc: prometheus.NewDesc(
 			prometheus.BuildFQName("nebula", "graphd", "count"),
 			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
-
 
 	metadLabels := []string{
 		"heartbeat",
@@ -141,23 +216,38 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	exporter.metadMap["metad_count"] = metrics{
-		MetricsType: "metad_count",
+		MetricsType: "count",
 		desc: prometheus.NewDesc(
 			prometheus.BuildFQName("nebula", "metad", "count"),
 			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
 
 	storagedLabels := []string{
-		"get_bound", "bound_stats", "vertex_props",
-		"edge_props", "add_vertex", "add_edge",
-		"drop_space", "go", "insert_edge",
-		"del_vertex", "update_vertex", "update_edge",
-		"get_kv", "put_kv",
+		"get_bound",
+		"bound_stats",
+		"vertex_props",
+		"edge_props",
+		"add_vertex",
+		"add_edge",
+		"del_vertex",
+		"update_vertex",
+		"update_edge",
+		"get_kv",
+		"put_kv",
+		"lookup_edges",
+		"lookup_vertices",
+		"scan_vertex",
+		"scan_edge",
 	}
 
 	for _, storagedLabel := range storagedLabels {
 		for _, secondaryLabel := range secondaryLabels {
 			for _, thirdLabel := range thirdLabels {
+				if thirdLabel == "p99" {
+					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
+						continue
+					}
+				}
 				for _, lastLabel := range lastLabels {
 					exporter.storagedMap["storage_"+storagedLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
 						MetricsType: thirdLabel,
@@ -172,7 +262,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	exporter.storagedMap["storaged_count"] = metrics{
-		MetricsType: "storage_count",
+		MetricsType: "count",
 		desc: prometheus.NewDesc(
 			prometheus.BuildFQName("nebula", "storaged", "count"),
 			"", []string{"instanceName", "namespace", "instanceType"}, nil),
@@ -181,7 +271,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	err := exporter.exporterMetricsRegistry.Register(exporter)
 
 	if err != nil {
-		log.Fatalf("Register Nebula Collector Failed: %v", err)
+		klog.Fatalf("Register Nebula Collector Failed: %v", err)
 		return nil, err
 	}
 
@@ -224,7 +314,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	return exporter, nil
 }
 func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {
-	log.Info("Begin Describe Nebula Metrics")
+	klog.Info("Begin Describe Nebula Metrics")
 
 	for _, metrics := range exporter.storagedMap {
 		ch <- metrics.desc
@@ -237,22 +327,25 @@ func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {
 	for _, metrics := range exporter.graphdMap {
 		ch <- metrics.desc
 	}
-	log.Info("Describe Nebula Metrics Done")
+	klog.Info("Describe Nebula Metrics Done")
 }
 
 func (exporter *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
 	if exporter.Client != nil {
-		exporter.CollectFromKuberneres(ch)
+		exporter.CollectFromKubernetes(ch)
 	} else {
 		exporter.CollectFromStaticConfig(ch)
 	}
 }
 
-func (exporter *NebulaExporter) CollectMetrics(name, typ, namespace string, metrics []string, ch chan<- prometheus.Metric) {
-	if typ == "metad" {
-		log.Infof("Begin Collect Metad %s Metrics ", name)
+func (exporter *NebulaExporter) CollectMetrics(
+	name string,
+	nebulaType string,
+	namespace string,
+	metrics []string,
+	ch chan<- prometheus.Metric) {
+	if nebulaType == "metad" {
 		for _, singleMetric := range metrics {
-			log.Info(singleMetric)
 			seps := strings.Split(singleMetric, "=")
 			if len(seps) != 2 {
 				continue
@@ -267,15 +360,13 @@ func (exporter *NebulaExporter) CollectMetrics(name, typ, namespace string, metr
 				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
 					name,
 					namespace,
-					typ,
+					nebulaType,
 				)
 			}
 		}
 
-	} else if typ == "storaged" {
-		log.Infof("Begin Collect Storaged %s Metrics ", name)
+	} else if nebulaType == "storaged" {
 		for _, singleMetric := range metrics {
-			log.Info(singleMetric)
 			seps := strings.Split(singleMetric, "=")
 			if len(seps) != 2 {
 				continue
@@ -290,14 +381,12 @@ func (exporter *NebulaExporter) CollectMetrics(name, typ, namespace string, metr
 				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
 					name,
 					namespace,
-					typ,
+					nebulaType,
 				)
 			}
 		}
-	} else if typ == "graphd" {
-		log.Infof("Begin Collect Graphd %s Metrics ", name)
+	} else if nebulaType == "graphd" {
 		for _, singleMetric := range metrics {
-			log.Info(singleMetric)
 			seps := strings.Split(singleMetric, "=")
 			if len(seps) != 2 {
 				continue
@@ -312,7 +401,7 @@ func (exporter *NebulaExporter) CollectMetrics(name, typ, namespace string, metr
 				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
 					name,
 					namespace,
-					typ,
+					nebulaType,
 				)
 			}
 		}
@@ -321,8 +410,10 @@ func (exporter *NebulaExporter) CollectMetrics(name, typ, namespace string, metr
 
 func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
 	var wg sync.WaitGroup
+	wg.Add(len(exporter.config.NebulaItems))
 
-	for _, item := range exporter.config.NebulaItems {
+	for _, nebulaItem := range exporter.config.NebulaItems {
+		item := nebulaItem
 		podIpAddress := item.EndpointIP
 		podHttpPort := item.EndpointPort
 
@@ -330,33 +421,42 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 			continue
 		}
 
-		wg.Add(1)
 		go func() {
+			defer wg.Done()
+			klog.Infof("Collect %s %s Metrics ", strings.ToUpper(item.NebulaType), item.InstanceName)
 			metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
-
+			if len(metrics) == 0 {
+				klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
+			}
 			if err != nil {
-				wg.Done()
+				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
 			exporter.CollectMetrics(item.InstanceName, item.NebulaType, "nebula", metrics, ch)
-
-			wg.Done()
 		}()
 
-		wg.Wait()
-		log.Info("Collect Nebula Metrics Done")
+		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, item.NebulaType)
+		if err != nil {
+			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
+			return
+		}
+		exporter.CollectMetrics(item.InstanceName, item.NebulaType, "nebula", statusMetrics, ch)
 	}
+
+	wg.Wait()
+	klog.Info("Collect Nebula Metrics Done")
 }
 
-func (exporter *NebulaExporter) CollectFromKuberneres(ch chan<- prometheus.Metric) {
-	log.Info("Begin Collect Nebula Metrics")
-	podLists, err := exporter.Client.CoreV1().Pods(exporter.Namespace).List(metav1.ListOptions{})
+func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
+	klog.Info("Begin Collect Nebula Metrics")
 
+	podLists, err := exporter.Client.CoreV1().Pods(exporter.Namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return
 	}
 
 	var wg sync.WaitGroup
+	wg.Add(len(podLists.Items))
 
 	for _, pod := range podLists.Items {
 		podIpAddress := pod.Status.PodIP
@@ -371,31 +471,41 @@ func (exporter *NebulaExporter) CollectFromKuberneres(ch chan<- prometheus.Metri
 			continue
 		}
 
-		wg.Add(1)
+		nebulaType := ""
+		if strings.Contains(pod.Name, "metad") {
+			nebulaType = "metad"
+		} else if strings.Contains(pod.Name, "storaged") {
+			nebulaType = "storaged"
+		} else if strings.Contains(pod.Name, "graphd") {
+			nebulaType = "graphd"
+		}
 
 		go func() {
+			defer wg.Done()
+			klog.Infof("Collect %s %s Metrics ", strings.ToUpper(nebulaType), pod.Name)
 			metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
-
+			if len(metrics) == 0 {
+				klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
+			}
 			if err != nil {
-				wg.Done()
+				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
 
-			nebulaType := ""
-			if strings.Contains(pod.Name, "metad") {
-				nebulaType = "metad"
-			} else if strings.Contains(pod.Name, "storaged") {
-				nebulaType = "storaged"
-			} else if strings.Contains(pod.Name, "graphd") {
-				nebulaType = "graphd"
-			}
-
 			exporter.CollectMetrics(pod.Name, nebulaType, pod.Namespace, metrics, ch)
-
-			wg.Done()
 		}()
 
-		wg.Wait()
-		log.Info("Collect Nebula Metrics Done")
+		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, nebulaType)
+		if len(statusMetrics) == 0 {
+			klog.Errorf("could not get status metrics from %s:%d", podIpAddress, podHttpPort)
+		}
+		if err != nil {
+			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
+			return
+		}
+		exporter.CollectMetrics(pod.Name, nebulaType, pod.Namespace, statusMetrics, ch)
 	}
+
+	wg.Wait()
+	klog.Info("Collect Nebula Metrics Done")
 }
