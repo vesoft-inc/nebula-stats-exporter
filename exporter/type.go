@@ -6,8 +6,8 @@ type StaticConfig struct {
 }
 
 type NebulaItem struct {
-	InstanceName string `yaml:"instanceName"`
-	EndpointIP   string `yaml:"endpointIP"`
-	EndpointPort int32  `yaml:"endpointPort"`
-	NebulaType   string `yaml:"nebulaType"`
+	InstanceName  string `yaml:"instanceName"`
+	EndpointIP    string `yaml:"endpointIP"`
+	EndpointPort  int32  `yaml:"endpointPort"`
+	ComponentType string `yaml:"componentType"`
 }

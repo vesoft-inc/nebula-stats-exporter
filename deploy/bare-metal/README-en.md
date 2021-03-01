@@ -11,21 +11,39 @@ nebulaItems:
   - instanceName: metad-0
     endpointIP: 127.0.0.1 # nebula host IP
     endpointPort: 12000
-    nebulaType: metad
+    componentType: metad
 ```
 
 ### Run nebula-stats-exporter
+
+Startup parameters
+
+```bash
+usage: nebula-stats-exporter [<flags>]
+
+Flags:
+  -h, --help                    Show context-sensitive help (also try --help-long and --help-man).
+      --listen-address=":9100"  Address of nebula metrics server
+      --namespace="default"     The namespace which nebula in
+      --config="/root/.kube/config"  
+                                The kubernetes config file
+      --max-request=40          Maximum number of parallel scrape requests. Use 0 to disable.
+      --bare-metal              Whether running in bare metal environment
+      --bare-metal-config="/config.yaml"  
+                                The bare metal config file
+      --version                 Show application version.
+```
 
 Run directly:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
- vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config-path=/config/config.yaml
+ vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config=/config/config.yaml
 ```
 
 ### Configure Prometheus
 
-You need to configure nebula-stats-exporter in the `prometheus.yaml` file. Here we use the static configs. Please specify the metrics endpoints for nebula-stats-exporter in `static_configs`.
+You need to configure nebula-stats-exporter in the `prometheus.yml` file. Here we use the static configs. Please specify the metrics endpoints for nebula-stats-exporter in `static_configs`.
 
 Here is an example:
 

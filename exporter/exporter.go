@@ -19,23 +19,36 @@ import (
 	"k8s.io/klog"
 )
 
+type ComponentType string
+
+const (
+	ComponentLabelKey = "app.kubernetes.io/component"
+
+	GraphdComponent   ComponentType = "graphd"
+	MetadComponent    ComponentType = "metad"
+	StoragedComponent ComponentType = "storaged"
+
+	// prometheus FQName namespace
+	Namespace = "nebula"
+)
+
+func (ct ComponentType) String() string {
+	return string(ct)
+}
+
 type metrics struct {
-	MetricsType string
+	metricsType string
 	desc        *prometheus.Desc
 }
 
 type NebulaExporter struct {
-	sync.Mutex
-	Client *kubernetes.Clientset
-	mux    *http.ServeMux
-
-	Namespace               string
-	ListenAddress           string
-	exporterMetricsRegistry *prometheus.Registry
-	config                  StaticConfig
-	graphdMap               map[string]metrics
-	storagedMap             map[string]metrics
-	metadMap                map[string]metrics
+	client        *kubernetes.Clientset
+	mux           *http.ServeMux
+	namespace     string
+	listenAddress string
+	registry      *prometheus.Registry
+	config        StaticConfig
+	metricMap     map[string]metrics
 }
 
 func (exporter *NebulaExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -48,37 +61,32 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 	}
 
 	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/get_stats?stats", ipAddress, port))
-
 	if err != nil {
 		return []string{}, err
 	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
 		return []string{}, err
 	}
 
 	metricStr := string(bytes)
-
 	metrics := strings.Split(metricStr, "\n")
 
 	return metrics, nil
 }
 
-func getNebulaComponentStatus(ipAddress string, port int32, nebulaType string) ([]string, error) {
+func getNebulaComponentStatus(ipAddress string, port int32, componentType string) ([]string, error) {
 	httpClient := http.Client{
 		Timeout: time.Second * 2,
 	}
 
 	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/status", ipAddress, port))
-
 	if err != nil {
 		return nil, err
 	}
 
 	bytes, err := ioutil.ReadAll(resp.Body)
-
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +101,7 @@ func getNebulaComponentStatus(ipAddress string, port int32, nebulaType string) (
 		return nil, err
 	}
 
-	countStr := fmt.Sprintf("%s_count=0", nebulaType)
+	countStr := fmt.Sprintf("%s_count=0", componentType)
 	if status.Status == "running" {
 		countStr = strings.Replace(countStr, "0", "1", 1)
 	}
@@ -105,22 +113,20 @@ func getNebulaComponentStatus(ipAddress string, port int32, nebulaType string) (
 func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientset,
 	config StaticConfig, maxRequests int) (*NebulaExporter, error) {
 	exporter := &NebulaExporter{
-		Namespace:               ns,
-		ListenAddress:           listenAddr,
-		Client:                  client,
-		config:                  config,
-		graphdMap:               make(map[string]metrics),
-		storagedMap:             make(map[string]metrics),
-		metadMap:                make(map[string]metrics),
-		exporterMetricsRegistry: prometheus.NewRegistry(),
+		namespace:     ns,
+		listenAddress: listenAddr,
+		client:        client,
+		config:        config,
+		metricMap:     make(map[string]metrics),
+		registry:      prometheus.NewRegistry(),
 	}
 
 	secondaryLabels := []string{
-		"latency", "error_qps", "qps",
+		"latency_us",
 	}
 
 	thirdLabels := []string{
-		"count", "avg", "rate", "sum", "p99",
+		"rate", "sum", "avg", "p75", "p95", "p99", "p999",
 	}
 
 	lastLabels := []string{
@@ -128,165 +134,145 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	}
 
 	graphdLabels := []string{
-		"storageClient",
-		"metaClient",
-		"all",
-		"use",
-		"show",
-		"find_path",
-		"create_edge",
-		"create_tag",
-		"create_snapshot",
-		"delete_edge",
-		"delete_vertices",
-		"update_vertex",
-		"update_edge",
-		"alter_tag",
-		"alter_edge",
-		"drop_tag",
-		"drop_edge",
-		"drop_space",
-		"drop_snapshot",
-		"insert_edge",
-		"insert_vertex",
-		"fetch_edges",
-		"fetch_vertices",
-		"describe_tag",
-		"describe_edge",
-		"describe_space",
-		"go",
-		"return",
-		"set",
-		"yield",
-		"group_by",
-		"order_by",
-		"limit",
-		"assignment",
-		"ingest",
-		"config",
-		"balance",
-		"download",
+		"slow_query",
+		"query",
+		"num_query_errors",
+		"num_queries",
+		"num_slow_queries",
 	}
 
 	for _, graphdLabel := range graphdLabels {
-		for _, secondaryLabel := range secondaryLabels {
-			for _, thirdLabel := range thirdLabels {
-				if thirdLabel == "p99" {
-					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
-						continue
-					}
-				}
+		if strings.HasPrefix(graphdLabel, "num_") {
+			for _, secondLabel := range thirdLabels[:2] {
 				for _, lastLabel := range lastLabels {
-					exporter.graphdMap["graph_"+graphdLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
-						MetricsType: thirdLabel,
-						desc: prometheus.NewDesc(
-							prometheus.BuildFQName("nebula", "graphd", graphdLabel+"_"+secondaryLabel+"_"+thirdLabel+"_"+lastLabel),
-							"", []string{"instanceName", "namespace", "instanceType"},
-							nil),
+					exporter.buildMetricMap(GraphdComponent, graphdLabel, secondLabel, lastLabel)
+				}
+			}
+		} else {
+			for _, secondLabel := range secondaryLabels {
+				for _, thirdLabel := range thirdLabels[2:] {
+					for _, lastLabel := range lastLabels {
+						exporter.buildMetricMap(GraphdComponent, graphdLabel, secondLabel, thirdLabel, lastLabel)
 					}
 				}
 			}
 		}
-	}
-
-	exporter.graphdMap["graphd_count"] = metrics{
-		MetricsType: "count",
-		desc: prometheus.NewDesc(
-			prometheus.BuildFQName("nebula", "graphd", "count"),
-			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
 
 	metadLabels := []string{
 		"heartbeat",
+		"num_heartbeats",
 	}
 
 	for _, metadLabel := range metadLabels {
-		for _, secondaryLabel := range secondaryLabels {
-			for _, thirdLabel := range thirdLabels {
+		if strings.HasPrefix(metadLabel, "num_") {
+			for _, secondLabel := range thirdLabels[:2] {
 				for _, lastLabel := range lastLabels {
-					exporter.metadMap["meta_"+metadLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
-						MetricsType: thirdLabel,
-						desc: prometheus.NewDesc(
-							prometheus.BuildFQName("nebula", "metad", metadLabel+"_"+secondaryLabel+"_"+thirdLabel+"_"+lastLabel),
-							"", []string{"instanceName", "namespace", "instanceType"}, nil),
+					exporter.buildMetricMap(MetadComponent, metadLabel, secondLabel, lastLabel)
+				}
+			}
+		} else {
+			for _, secondLabel := range secondaryLabels {
+				for _, thirdLabel := range thirdLabels[2 : len(thirdLabels)-1] {
+					for _, lastLabel := range lastLabels {
+						exporter.buildMetricMap(MetadComponent, metadLabel, secondLabel, thirdLabel, lastLabel)
 					}
 				}
 			}
 		}
-	}
-
-	exporter.metadMap["metad_count"] = metrics{
-		MetricsType: "count",
-		desc: prometheus.NewDesc(
-			prometheus.BuildFQName("nebula", "metad", "count"),
-			"", []string{"instanceName", "namespace", "instanceType"}, nil),
 	}
 
 	storagedLabels := []string{
-		"get_bound",
-		"bound_stats",
-		"vertex_props",
-		"edge_props",
-		"add_vertex",
-		"add_edge",
-		"del_vertex",
-		"update_vertex",
+		"num_lookup_errors",
+		"num_lookup",
+		"num_get_prop_errors",
+		"num_get_neighbors",
 		"update_edge",
-		"get_kv",
-		"put_kv",
-		"lookup_edges",
-		"lookup_vertices",
-		"scan_vertex",
+		"num_update_edge_errors",
+		"num_scan_edge",
+		"num_update_edge",
 		"scan_edge",
+		"update_vertex",
+		"num_scan_vertex_errors",
+		"get_value",
+		"num_add_vertices_errors",
+		"add_edges_atomic",
+		"num_forward_tranx_errors",
+		"num_delete_vertices_errors",
+		"num_scan_edge_errors",
+		"num_delete_edges",
+		"scan_vertex",
+		"num_add_edges",
+		"num_delete_vertices",
+		"num_add_edges_atomic",
+		"num_add_vertices",
+		"num_add_edges_atomic_errors",
+		"num_get_value",
+		"num_get_neighbors_errors",
+		"add_vertices",
+		"num_get_prop",
+		"forward_tranx",
+		"num_get_value_errors",
+		"add_edges",
+		"lookup",
+		"delete_edges",
+		"num_add_edges_errors",
+		"num_update_vertex_errors",
+		"num_scan_vertex",
+		"get_prop",
+		"get_neighbors",
+		"delete_vertices",
+		"num_forward_tranx",
+		"num_delete_edges_errors",
+		"num_update_vertex",
 	}
 
 	for _, storagedLabel := range storagedLabels {
-		for _, secondaryLabel := range secondaryLabels {
-			for _, thirdLabel := range thirdLabels {
-				if thirdLabel == "p99" {
-					if secondaryLabel == "error_qps" || secondaryLabel == "qps" {
-						continue
-					}
-				}
+		if strings.HasPrefix(storagedLabel, "num_") {
+			for _, secondLabel := range thirdLabels[:2] {
 				for _, lastLabel := range lastLabels {
-					exporter.storagedMap["storage_"+storagedLabel+"_"+secondaryLabel+"."+thirdLabel+"."+lastLabel] = metrics{
-						MetricsType: thirdLabel,
-						desc: prometheus.NewDesc(
-							prometheus.BuildFQName("nebula", "storage", storagedLabel+"_"+secondaryLabel+"_"+thirdLabel+"_"+lastLabel),
-							"", []string{"instanceName", "namespace", "instanceType"}, nil),
+					exporter.buildMetricMap(StoragedComponent, storagedLabel, secondLabel, lastLabel)
+				}
+			}
+		} else {
+			for _, secondLabel := range secondaryLabels {
+				for _, thirdLabel := range thirdLabels[2 : len(thirdLabels)-1] {
+					for _, lastLabel := range lastLabels {
+						exporter.buildMetricMap(StoragedComponent, storagedLabel, secondLabel, thirdLabel, lastLabel)
 					}
-
 				}
 			}
 		}
 	}
 
-	exporter.storagedMap["storaged_count"] = metrics{
-		MetricsType: "count",
-		desc: prometheus.NewDesc(
-			prometheus.BuildFQName("nebula", "storaged", "count"),
-			"", []string{"instanceName", "namespace", "instanceType"}, nil),
+	t := []string{GraphdComponent.String(), MetadComponent.String(), StoragedComponent.String()}
+	for _, c := range t {
+		k := fmt.Sprintf("%s_count", c)
+		exporter.metricMap[k] = metrics{
+			metricsType: "count",
+			desc: prometheus.NewDesc(
+				prometheus.BuildFQName(Namespace, c, "count"),
+				"", []string{"instanceName", "namespace", "componentType"}, nil),
+		}
 	}
 
-	err := exporter.exporterMetricsRegistry.Register(exporter)
-
-	if err != nil {
+	if err := exporter.registry.Register(exporter); err != nil {
 		klog.Fatalf("Register Nebula Collector Failed: %v", err)
 		return nil, err
 	}
 
 	handler := promhttp.HandlerFor(
-		prometheus.Gatherers{exporter.exporterMetricsRegistry},
+		prometheus.Gatherers{exporter.registry},
 		promhttp.HandlerOpts{
 			ErrorLog:            log.NewErrorLogger(),
 			ErrorHandling:       promhttp.ContinueOnError,
 			MaxRequestsInFlight: maxRequests,
-			Registry:            exporter.exporterMetricsRegistry,
+			Registry:            exporter.registry,
 		},
 	)
 
 	metricsHandler := promhttp.InstrumentMetricHandler(
-		exporter.exporterMetricsRegistry, handler,
+		exporter.registry, handler,
 	)
 
 	exporter.mux = http.NewServeMux()
@@ -309,29 +295,23 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 		`))
 	})
 
-	exporter.exporterMetricsRegistry = prometheus.NewRegistry()
+	exporter.registry = prometheus.NewRegistry()
 
 	return exporter, nil
 }
 func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {
 	klog.Info("Begin Describe Nebula Metrics")
 
-	for _, metrics := range exporter.storagedMap {
+	for _, metrics := range exporter.metricMap {
 		ch <- metrics.desc
 	}
 
-	for _, metrics := range exporter.metadMap {
-		ch <- metrics.desc
-	}
-
-	for _, metrics := range exporter.graphdMap {
-		ch <- metrics.desc
-	}
 	klog.Info("Describe Nebula Metrics Done")
 }
 
 func (exporter *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
-	if exporter.Client != nil {
+	klog.Infoln("Collect!")
+	if exporter.client != nil {
 		exporter.CollectFromKubernetes(ch)
 	} else {
 		exporter.CollectFromStaticConfig(ch)
@@ -340,70 +320,27 @@ func (exporter *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
 
 func (exporter *NebulaExporter) CollectMetrics(
 	name string,
-	nebulaType string,
+	componentType string,
 	namespace string,
 	metrics []string,
 	ch chan<- prometheus.Metric) {
-	if nebulaType == "metad" {
-		for _, singleMetric := range metrics {
-			seps := strings.Split(singleMetric, "=")
-			if len(seps) != 2 {
-				continue
-			}
-
-			values, err := strconv.ParseFloat(seps[1], 64)
-			if err != nil {
-				continue
-			}
-
-			if metric, ok := exporter.metadMap[seps[0]]; ok {
-				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
-					name,
-					namespace,
-					nebulaType,
-				)
-			}
+	for _, singleMetric := range metrics {
+		seps := strings.Split(singleMetric, "=")
+		if len(seps) != 2 {
+			continue
 		}
 
-	} else if nebulaType == "storaged" {
-		for _, singleMetric := range metrics {
-			seps := strings.Split(singleMetric, "=")
-			if len(seps) != 2 {
-				continue
-			}
-
-			values, err := strconv.ParseFloat(seps[1], 64)
-			if err != nil {
-				continue
-			}
-
-			if metric, ok := exporter.storagedMap[seps[0]]; ok {
-				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
-					name,
-					namespace,
-					nebulaType,
-				)
-			}
+		values, err := strconv.ParseFloat(seps[1], 64)
+		if err != nil {
+			continue
 		}
-	} else if nebulaType == "graphd" {
-		for _, singleMetric := range metrics {
-			seps := strings.Split(singleMetric, "=")
-			if len(seps) != 2 {
-				continue
-			}
 
-			values, err := strconv.ParseFloat(seps[1], 64)
-			if err != nil {
-				continue
-			}
-
-			if metric, ok := exporter.graphdMap[seps[0]]; ok {
-				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
-					name,
-					namespace,
-					nebulaType,
-				)
-			}
+		if metric, ok := exporter.metricMap[seps[0]]; ok {
+			ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
+				name,
+				namespace,
+				componentType,
+			)
 		}
 	}
 }
@@ -423,7 +360,7 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 
 		go func() {
 			defer wg.Done()
-			klog.Infof("Collect %s %s Metrics ", strings.ToUpper(item.NebulaType), item.InstanceName)
+			klog.Infof("Collect %s %s:%d Metrics ", strings.ToUpper(item.ComponentType), item.InstanceName, item.EndpointPort)
 			metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
 			if len(metrics) == 0 {
 				klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
@@ -432,15 +369,15 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
-			exporter.CollectMetrics(item.InstanceName, item.NebulaType, "nebula", metrics, ch)
+			exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, metrics, ch)
 		}()
 
-		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, item.NebulaType)
+		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, item.ComponentType)
 		if err != nil {
 			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		exporter.CollectMetrics(item.InstanceName, item.NebulaType, "nebula", statusMetrics, ch)
+		exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, statusMetrics, ch)
 	}
 
 	wg.Wait()
@@ -450,15 +387,23 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 	klog.Info("Begin Collect Nebula Metrics")
 
-	podLists, err := exporter.Client.CoreV1().Pods(exporter.Namespace).List(context.TODO(), metav1.ListOptions{})
+	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
+		klog.Error(err)
 		return
 	}
 
 	var wg sync.WaitGroup
 	wg.Add(len(podLists.Items))
 
-	for _, pod := range podLists.Items {
+	for _, item := range podLists.Items {
+		pod := item
+		_, ok := pod.Labels[ComponentLabelKey]
+		if !ok {
+			wg.Done()
+			continue
+		}
+
 		podIpAddress := pod.Status.PodIP
 		podHttpPort := int32(0)
 		for _, port := range pod.Spec.Containers[0].Ports {
@@ -468,21 +413,15 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 		}
 
 		if podHttpPort == 0 {
+			wg.Done()
 			continue
 		}
 
-		nebulaType := ""
-		if strings.Contains(pod.Name, "metad") {
-			nebulaType = "metad"
-		} else if strings.Contains(pod.Name, "storaged") {
-			nebulaType = "storaged"
-		} else if strings.Contains(pod.Name, "graphd") {
-			nebulaType = "graphd"
-		}
+		componentType := pod.Labels[ComponentLabelKey]
 
 		go func() {
 			defer wg.Done()
-			klog.Infof("Collect %s %s Metrics ", strings.ToUpper(nebulaType), pod.Name)
+			klog.Infof("Collect %s %s:%d Metrics ", strings.ToUpper(componentType), pod.Name, podHttpPort)
 			metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
 			if len(metrics) == 0 {
 				klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
@@ -492,10 +431,10 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 				return
 			}
 
-			exporter.CollectMetrics(pod.Name, nebulaType, pod.Namespace, metrics, ch)
+			exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, metrics, ch)
 		}()
 
-		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, nebulaType)
+		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, componentType)
 		if len(statusMetrics) == 0 {
 			klog.Errorf("could not get status metrics from %s:%d", podIpAddress, podHttpPort)
 		}
@@ -503,9 +442,50 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		exporter.CollectMetrics(pod.Name, nebulaType, pod.Namespace, statusMetrics, ch)
+		exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, statusMetrics, ch)
 	}
 
 	wg.Wait()
 	klog.Info("Collect Nebula Metrics Done")
+}
+
+func (exporter *NebulaExporter) buildMetricMap(
+	component ComponentType,
+	labels ...string) *NebulaExporter {
+	if len(labels) == 0 {
+		return exporter
+	}
+
+	var k string
+	var metricName string
+
+	last := len(labels) - 2
+	if last <= 0 {
+		return exporter
+	}
+
+	for i, label := range labels {
+		if i == 0 {
+			metricName = label
+			k = label
+		} else {
+			metricName = metricName + "_" + label
+			if i < last {
+				k = k + "_" + label
+			}
+		}
+	}
+
+	for _, label := range labels[last:] {
+		k = k + "." + label
+	}
+
+	exporter.metricMap[k] = metrics{
+		metricsType: labels[last],
+		desc: prometheus.NewDesc(
+			prometheus.BuildFQName(Namespace, component.String(), metricName),
+			"", []string{"instanceName", "namespace", "componentType"},
+			nil),
+	}
+	return exporter
 }

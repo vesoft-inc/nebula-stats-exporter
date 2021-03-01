@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-go build nebula-stats-exporter
+go build -o nebula-stats-exporter .
