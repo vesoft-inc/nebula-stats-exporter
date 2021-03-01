@@ -10,7 +10,7 @@ Some of the metrics collections are:
 ## Get Repo Info
 
 ```console
-helm repo add nebula-exporter https://vesoft-inc.github.io/nebula-stats-exporter
+helm repo add nebula-exporter https://vesoft-inc.github.io/nebula-stats-exporter/charts
 helm repo update
 ```
 

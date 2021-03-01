@@ -25,6 +25,6 @@ entries:
     sources:
     - https://github.com/vesoft-inc/nebula
     urls:
-    - https://vesoft-inc.github.io/nebula-stats-exporter/nebula-exporter-0.2.0.tgz
+    - https://vesoft-inc.github.io/nebula-stats-exporter/charts/nebula-exporter-0.2.0.tgz
     version: 0.2.0
 generated: "2021-02-28T20:01:51.697031739+08:00"
