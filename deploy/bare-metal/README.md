@@ -23,7 +23,7 @@ nebulaItems:
 -v参数指定docker运行时需要挂载的本地目录，-v /root/nebula:/config，将存放config.yaml的/root/nebula挂载到容器/config下.
 
 ```bash
-docker run -d --restart=always -p 9100:9100 -v {absolute directory of config.yaml}:/config \
+docker run -d --network=host --restart=always -p 9100:9100 -v {absolute directory of config.yaml}:/config \
  vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config-path=/config/config.yaml
 ```
 
