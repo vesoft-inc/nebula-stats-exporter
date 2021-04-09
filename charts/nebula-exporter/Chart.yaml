@@ -1,0 +1,22 @@
+apiVersion: v1
+appVersion: v2.0.0
+description: Nebula Graph stats exporter for prometheus
+home: https://nebula-graph.io
+icon: https://github.com/vesoft-inc/nebula/raw/master/docs/logo.png
+keywords:
+  - kubernetes
+  - exporter
+  - prometheus
+  - nebula
+  - graph
+maintainers:
+  - email: kevin.qiao@vesoft.com
+    name: kevin
+    url: https://github.com/MegaByte875
+  - email: kenshin.liu@vesoft.com
+    name: kenshin
+    url: https://github.com/kqzh
+name: nebula-exporter
+sources:
+  - https://github.com/vesoft-inc/nebula
+version: 0.2.0
