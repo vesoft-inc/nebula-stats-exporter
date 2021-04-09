@@ -60,7 +60,7 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 		Timeout: time.Second * 2,
 	}
 
-	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/get_stats?stats", ipAddress, port))
+	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/stats?stats=", ipAddress, port))
 	if err != nil {
 		return []string{}, err
 	}
