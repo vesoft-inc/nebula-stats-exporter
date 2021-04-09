@@ -52,7 +52,7 @@ spec:
       serviceAccountName: nebula-stats-exporter
       containers:
         - name: exporter
-          image: vesoft/nebula-stats-exporter:v0.0.2
+          image: vesoft/nebula-stats-exporter:v0.0.3
           imagePullPolicy: Always
           args:
             ["--listen-address=0.0.0.0:9100", "--namespace=default", "--max-request=40"]
