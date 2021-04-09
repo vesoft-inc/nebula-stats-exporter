@@ -38,7 +38,7 @@ Run directly:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {directory to config.yaml}:/config \
- vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config=/config/config.yaml
+ vesoft/nebula-stats-exporter:v0.0.3  --bare-metal --bare-metal-config=/config/config.yaml
 ```
 
 ### Configure Prometheus

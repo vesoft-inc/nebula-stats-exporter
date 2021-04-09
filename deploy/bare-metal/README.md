@@ -42,7 +42,7 @@ Flags:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {absolute directory of config.yaml}:/config \
- vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config=/config/config.yaml
+ vesoft/nebula-stats-exporter:v0.0.3  --bare-metal --bare-metal-config=/config/config.yaml
 ```
 
 ### 配置 prometheus

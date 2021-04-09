@@ -2,10 +2,10 @@
 
 ### 配置nebula-stats-exporter
 
-在config.yaml中的nebulaItems下添加监控的nebula组件  
+在config.yaml中的nebulaItems下添加监控的nebula组件.  
 * instanceName用于标识组件名称，endpointIP用于指定该组件的 IP 地址.  
 * endpointPort用于指定该组件的 http 端口.  
-* nebulaType用于指定该组件的服务类型: metad、storaged 或者 graphd.  
+* componentType用于指定该组件的服务类型: metad、storaged 或者 graphd.  
 * 如果是rpm方式部署nebula，那么endpointIP请填写主机IP地址，如果是docker方式部署nebula，那么endpointIP请填写容器IP地址.
   
 配置示例文件可参考deploy/bare-metal/config.yaml
@@ -15,7 +15,7 @@ nebulaItems:
   - instanceName: metad-0
     endpointIP: 192.168.8.102 # nebula component ip address
     endpointPort: 12000
-    nebulaType: metad
+    componentType: metad
 ```
 
 ### 运行 nebula-stats-exporter
@@ -42,7 +42,7 @@ Flags:
 
 ```bash
 docker run -d --restart=always -p 9100:9100 -v {absolute directory of config.yaml}:/config \
- vesoft/nebula-stats-exporter:v0.0.2  --bare-metal --bare-metal-config-path=/config/config.yaml
+ vesoft/nebula-stats-exporter:v0.0.3  --bare-metal --bare-metal-config=/config/config.yaml
 ```
 
 ### 配置 prometheus
