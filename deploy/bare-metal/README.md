@@ -14,7 +14,7 @@
 nebulaItems:
   - instanceName: metad-0
     endpointIP: 192.168.8.102 # nebula component ip address
-    endpointPort: 12000
+    endpointPort: 19559
     componentType: metad
 ```
 
