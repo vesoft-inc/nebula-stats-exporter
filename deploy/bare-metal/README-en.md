@@ -10,7 +10,7 @@ Here is an example:
 nebulaItems:
   - instanceName: metad-0
     endpointIP: 127.0.0.1 # nebula host IP
-    endpointPort: 12000
+    endpointPort: 19559
     componentType: metad
 ```
 
