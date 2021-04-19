@@ -4,7 +4,15 @@ GO ?= go
 VERSION ?= v0.0.2
 DockerUser=vesoft
 
-all: build push clean
+ifeq (,$(shell go env GOBIN))
+GOBIN=$(shell go env GOPATH)/bin
+else
+GOBIN=$(shell go env GOBIN)
+endif
+
+all: check build push clean
+
+check: fmt vet lint
 
 build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build nebula-stats-exporter.go
@@ -19,6 +27,13 @@ clean:
 
 fmt:
 	go fmt .
+
+vet:
+	go vet ./...
+
+lint:
+	$(GOBIN)/golangci-lint run
+
 .PHONY: all
 
 
