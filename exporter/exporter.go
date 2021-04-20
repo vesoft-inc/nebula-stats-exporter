@@ -28,7 +28,7 @@ const (
 	MetadComponent    ComponentType = "metad"
 	StoragedComponent ComponentType = "storaged"
 
-	// prometheus FQName namespace
+	// Namespace represents the prometheus FQName
 	Namespace = "nebula"
 )
 
@@ -64,6 +64,7 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 	if err != nil {
 		return []string{}, err
 	}
+	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -72,6 +73,11 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 
 	metricStr := string(bytes)
 	metrics := strings.Split(metricStr, "\n")
+	if len(metrics) > 0 {
+		if metrics[len(metrics)-1] == "" {
+			metrics = metrics[:len(metrics)-1]
+		}
+	}
 
 	return metrics, nil
 }
@@ -85,6 +91,7 @@ func getNebulaComponentStatus(ipAddress string, port int32, componentType string
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -299,6 +306,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 
 	return exporter, nil
 }
+
 func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {
 	klog.Info("Begin Describe Nebula Metrics")
 
@@ -324,19 +332,35 @@ func (exporter *NebulaExporter) CollectMetrics(
 	namespace string,
 	metrics []string,
 	ch chan<- prometheus.Metric) {
-	for _, singleMetric := range metrics {
-		seps := strings.Split(singleMetric, "=")
-		if len(seps) != 2 {
-			continue
-		}
+	if len(metrics) == 0 {
+		return
+	}
 
+	// status metric
+	if len(metrics) == 1 {
+		seps := strings.Split(metrics[0], "=")
 		values, err := strconv.ParseFloat(seps[1], 64)
+		if err == nil {
+			if metric, ok := exporter.metricMap[seps[0]]; ok {
+				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
+					name,
+					namespace,
+					componentType,
+				)
+			}
+		}
+		return
+	}
+
+	// query metrics
+	matches := convertToMap(metrics)
+	for metric, value := range matches {
+		v, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			continue
 		}
-
-		if metric, ok := exporter.metricMap[seps[0]]; ok {
-			ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
+		if metric, ok := exporter.metricMap[metric]; ok {
+			ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, v,
 				name,
 				namespace,
 				componentType,
@@ -488,4 +512,33 @@ func (exporter *NebulaExporter) buildMetricMap(
 			nil),
 	}
 	return exporter
+}
+
+func convertToMap(metrics []string) map[string]string {
+	matches := make(map[string]string)
+	for t := 0; ; t += 2 {
+		if t+1 >= len(metrics) {
+			break
+		}
+		ok, value := getRValue(metrics[t])
+		if !ok {
+			continue
+		}
+		ok, metric := getRValue(metrics[t+1])
+		if !ok {
+			continue
+		}
+		if value != "" && metric != "" {
+			matches[metric] = value
+		}
+	}
+	return matches
+}
+
+func getRValue(metric string) (bool, string) {
+	seps := strings.Split(metric, "=")
+	if len(seps) != 2 {
+		return false, ""
+	}
+	return true, seps[1]
 }
