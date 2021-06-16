@@ -419,10 +419,10 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 	klog.Info("Begin Collect Nebula Metrics")
 
 	listOpts := metav1.ListOptions{}
-	if exporter.cluster != ""{
+	if exporter.cluster != "" {
 		listOpts.LabelSelector = fmt.Sprintf("%s=%s", ClusterLabelKey, exporter.cluster)
 	}
-	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(),listOpts)
+	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(), listOpts)
 	if err != nil {
 		klog.Error(err)
 		return

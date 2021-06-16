@@ -32,7 +32,7 @@ func main() {
 			Default("default").String()
 
 		cluster = kingpin.Flag("cluster",
-			"The cluster name for nebula, default get all clusters.").
+			"The cluster name for nebula, default get metrics of all clusters in the namespace.").
 			Default("").String()
 
 		kubeconfig = kingpin.Flag("kube-config",

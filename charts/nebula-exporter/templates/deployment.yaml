@@ -29,7 +29,10 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args:
-            ["--listen-address=0.0.0.0:{{ .Values.startUp.listenPort }}", "--namespace={{ .Release.Namespace }}", "--max-request={{ .Values.startUp.maxRequests }}"]
+            - "--listen-address=0.0.0.0:{{ .Values.startUp.listenPort }}"
+            - "--namespace={{ .Release.Namespace }}"
+            - "--cluster={{ .Values.cluster }}"
+            - "--max-request={{ .Values.startUp.maxRequests }}"
           ports:
             - name: exporter-port
               containerPort: {{ .Values.startUp.listenPort }}
