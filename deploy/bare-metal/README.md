@@ -80,7 +80,7 @@ docker run -d -p 3000:3000 grafana/grafana
 ```
 * 在grafana Data Sources里添加Prometheus类型的DataSource
 
-* 将 [grafana.json](!https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/deploy/grafana/bare-metal/nebula-grafana.json) 
+* 将 [nebula-grafana.json](../grafana/nebula-grafana.json)
 导入到nebula的dashboard中。
     
 ![](https://user-images.githubusercontent.com/51590253/84129424-860abb80-aa74-11ea-9208-c5a66cade0f8.gif)

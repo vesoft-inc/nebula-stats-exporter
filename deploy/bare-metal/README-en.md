@@ -75,4 +75,5 @@ First run grafana:
 docker run -d -p 3000:3000 grafana/grafana
 ```
 
-Then import the `deploy/grafana/bare-metal/nebula-grafana.json` to nebula's dashboard.
+Then import the [nebula-grafana.json](../grafana/nebula-grafana.json) to nebula's dashboard.
+s

@@ -23,13 +23,13 @@ $ helm install nebula-exporter nebula-exporter/nebula-exporter --namespace=${nam
 ```
 
 Note:   
-If the corresponding ${namespace} does not exist, you can create the namespace first by running the _kubectl create namespace ${namespace}_ command.
+If the corresponding ${namespace} does not exist, you can create the namespace first by running the `kubectl create namespace ${namespace}` command.
 
-${chart_version} represents the chart version of Nebula Operator. For example, v0.2.0. You can view the currently supported versions by running the _helm search repo -l nebula-exporter_ command.
+${chart_version} represents the chart version of Nebula Operator. For example, v0.2.0. You can view the currently supported versions by running the `helm search repo -l nebula-exporter` command.
 
 If you deploy nebula cluster by other tools rather than nebula-helm or nebula-operator, you need set the nebula component workload controller labels.
 
-Eg: _kubectl -n ${namespace} label sts nebula-graphd  app.kubernetes.io/component=graphd_, the component type can be set to _graphd_、_metad_、_storaged_
+Eg: `kubectl -n ${namespace} label sts nebula-graphd  app.kubernetes.io/component=graphd`, the component type can be set to `graphd`、`metad`、`storaged`
 
 
 _See [configuration](#configuration) below for custom demands._
@@ -49,4 +49,3 @@ $ helm show values nebula-exporter/nebula-exporter
 ```shell script
 $ helm uninstall nebula-exporter
 ```
-

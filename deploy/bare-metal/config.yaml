@@ -1,4 +1,36 @@
-version: v0.0.2
+version: v0.0.4
+clusters:
+  - name: nebula
+    instances:
+      - name: metad0
+        endpointIP: 192.168.10.131
+        endpointPort: 19559
+        componentType: metad
+      - name: metad1
+        endpointIP: 192.168.10.132
+        endpointPort: 19559
+        componentType: metad
+      - name: metad2
+        endpointIP: 192.168.10.133
+        endpointPort: 19559
+        componentType: metad
+      - name: graphd0
+        endpointIP: 192.168.10.131
+        endpointPort: 19669
+        componentType: graphd
+      - name: storaged0
+        endpointIP: 192.168.10.131
+        endpointPort: 19779
+        componentType: storaged
+      - name: storaged1
+        endpointIP: 192.168.10.132
+        endpointPort: 19779
+        componentType: storaged
+      - name: storaged2
+        endpointIP: 192.168.10.133
+        endpointPort: 19779
+        componentType: storaged
+# Deprecated: use clusters instead.
 nebulaItems:
   - instanceName: metad0
     endpointIP: 192.168.10.131
