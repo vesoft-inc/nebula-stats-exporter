@@ -1,7 +1,7 @@
 PROJECT="nebula-exporter"
 
 GO ?= go
-VERSION ?= v0.0.2
+VERSION ?= v0.0.4
 DockerUser=vesoft
 
 ifeq (,$(shell go env GOBIN))
@@ -10,15 +10,18 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
-all: check build push clean
+all: check build docker-build docker-push clean
 
 check: fmt vet lint
 
 build:
+	go build -o nebula-stats-exporter main.go
+
+docker-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o nebula-stats-exporter main.go
 	docker build -t $(DockerUser)/nebula-stats-exporter:$(VERSION) .
 
-push:
+docker-push:
 	docker push $(DockerUser)/nebula-stats-exporter:$(VERSION)
 
 clean:

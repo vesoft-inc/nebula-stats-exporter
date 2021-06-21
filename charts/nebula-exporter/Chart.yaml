@@ -16,6 +16,9 @@ maintainers:
   - email: kenshin.liu@vesoft.com
     name: kenshin
     url: https://github.com/kqzh
+  - email: vee.zhang@vesoft.com
+    name: Vee Zhang
+    url: https://github.com/veezhang
 name: nebula-exporter
 sources:
   - https://github.com/vesoft-inc/nebula

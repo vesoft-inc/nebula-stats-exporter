@@ -34,6 +34,11 @@ service:
   port: 9100
   annotations: {}
 
+serviceMonitor:
+  enabled: false
+  prometheusServiceMatchLabels: {}
+  # release: prometheus
+
 ingress:
   enabled: false
   annotations: {}

@@ -83,9 +83,10 @@ func main() {
 			klog.Fatalf("unmarshal failed: %v", err)
 		}
 
+		// nolint: staticcheck
 		if len(config.NebulaItems) != 0 {
 			instances := make([]exporter.Instance, 0, len(config.NebulaItems))
-			for _, item := range config.NebulaItems{
+			for _, item := range config.NebulaItems {
 				instances = append(instances, exporter.Instance{
 					Name:          item.InstanceName,
 					EndpointIP:    item.EndpointIP,
