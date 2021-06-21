@@ -86,11 +86,11 @@ $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
 
 ## Run on Bare Metal
 
-[Here](deploy/bare-metal/) is an example to deploy on Bare Metal.
+[Here](deploy/bare-metal/README.md) is an introduction to deploy on Bare Metal.
 
 ## Run on Kubernetes
 
-[Here](deploy/kubernetes/) is an example to deploy on Kubernetes.
+[Here](deploy/kubernetes/README.md) is an introduction to deploy on Kubernetes.
 
 ## Import grafana config
 

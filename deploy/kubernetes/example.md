@@ -1,9 +1,9 @@
-# Run on Kubernetes Guide
+# Run on Kubernetes Example
 
 ## Prerequisites
 
 * A ready Kubernetes
-* With [nebula-operator](https://github.com/vesoft-inc/nebula-operator) installed.
+* With [nebula-operator](https://github.com/vesoft-inc/nebula-operator) installed
 
 ## Install prometheus
 
@@ -12,7 +12,7 @@ $ kubectl create ns monitoring
 $ helm -n monitoring install prometheus kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts
 ```
 
-_See [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack) for details._
+_See [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack) for details._
 
 ## Create several Nebula Clusters
 
@@ -71,7 +71,7 @@ $ helm install nebula-exporter nebula-exporter --repo https://vesoft-inc.github.
 
 ## Import and view grafana
 
-Forward the grafana service.
+Forward the grafana service:
 
 ```shell
 $ kubectl -n monitoring port-forward svc/prometheus-grafana 3000:80

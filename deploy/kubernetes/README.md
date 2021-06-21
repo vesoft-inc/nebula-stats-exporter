@@ -6,7 +6,7 @@
 * [RBAC](https://kubernetes.io/docs/admin/authorization/rbac) enabled (optional)
 * [Helm](https://helm.sh) >= 3.2.0
 
-## Get Repo Info
+## Update Repo
 
 ```shell script
 # If you have already added it, please skip.
@@ -66,7 +66,9 @@ _See [helm uninstall](https://helm.sh/docs/helm/helm_uninstall/) for command doc
 
 ## Optional: chart parameters
 
-See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing). To see all configurable options with detailed comments, visit the chart's [values.yaml](https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/charts/nebula-exporter/values.yaml), or run these configuration commands:
+See [Customizing the Chart Before Installing](https://helm.sh/docs/intro/using_helm/#customizing-the-chart-before-installing).
+To see all configurable options with detailed comments, visit the chart's [values.yaml](https://github.com/vesoft-inc/nebula-stats-exporter/blob/master/charts/nebula-exporter/values.yaml),
+or run the following command:
 
 ```shell
 $ helm show values nebula-exporter/nebula-exporter
@@ -81,7 +83,7 @@ The following table lists is the configurable parameters of the chart and their 
 | `cluster` | Which Nebula Cluster's metrics to collect, default is all clusters in the same namespace | `""` |
 | `replicaCount` | Nebula stats exporter replica number | `1` |
 | `startUp.listenPort` | The nebula metrics server listening port | `9100` |
-| `startUp.maxRequests` | Maximum number of parallel scrape requests, use 0 to disable | `40` |
+| `startUp.maxRequests` | Maximum number of parallel scrape requests, use 0 for no limit | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
 | `image.tag` | Nebula stats exporter image tag | `v0.0.4` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |

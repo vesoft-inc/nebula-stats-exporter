@@ -1,4 +1,4 @@
-# Run on Bare Metal Guide
+# Run on Bare Metal Example
 
 ## Run nebula-stats-exporter
 
