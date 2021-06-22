@@ -43,6 +43,3 @@ lint:
 	$(GOBIN)/golangci-lint run
 
 .PHONY: all
-
-
-
