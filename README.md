@@ -60,7 +60,7 @@ _See [config.yaml](deploy/bare-metal/config.yaml) for details._
 
 ## Basic Prometheus Configuration
 
-Add a block to the `scrape_configs` of your prometheus.yml config file:
+Add a block to the `scrape_configs` of your prometheus.yaml config file:
 
 ```yaml
 scrape_configs:

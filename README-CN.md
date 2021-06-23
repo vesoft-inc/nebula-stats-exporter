@@ -60,7 +60,7 @@ _详情请见 [config.yaml](deploy/bare-metal/config.yaml) 。_
 
 ## 基本的 Prometheus 配置
 
-在 prometheus.yml 配置文件的 `scrape_configs` 中添加一个配置块：
+在 prometheus.yaml 配置文件的 `scrape_configs` 中添加一个配置块：
 
 ```yaml
 scrape_configs:

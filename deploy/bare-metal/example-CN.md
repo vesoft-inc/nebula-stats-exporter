@@ -15,7 +15,7 @@ $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
 
 ## 安装 prometheus
 
-您需要在 `prometheus.yml` 文件中配置 nebula-stats-exporter 。 这里我们使用静态配置。 请在 `static_configs` 中为 nebula-stats-exporter 指定 metrics endpoints 。
+您需要在 `prometheus.yaml` 文件中配置 nebula-stats-exporter 。 这里我们使用静态配置。 请在 `static_configs` 中为 nebula-stats-exporter 指定 metrics endpoints 。
 
 下面是一个例子：
 
