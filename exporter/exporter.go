@@ -23,6 +23,7 @@ type ComponentType string
 
 const (
 	ComponentLabelKey = "app.kubernetes.io/component"
+	ClusterLabelKey   = "app.kubernetes.io/cluster"
 
 	GraphdComponent   ComponentType = "graphd"
 	MetadComponent    ComponentType = "metad"
@@ -30,6 +31,7 @@ const (
 
 	// Namespace represents the prometheus FQName
 	Namespace = "nebula"
+	Cluster   = "nebula"
 )
 
 func (ct ComponentType) String() string {
@@ -45,6 +47,7 @@ type NebulaExporter struct {
 	client        *kubernetes.Clientset
 	mux           *http.ServeMux
 	namespace     string
+	cluster       string
 	listenAddress string
 	registry      *prometheus.Registry
 	config        StaticConfig
@@ -117,10 +120,11 @@ func getNebulaComponentStatus(ipAddress string, port int32, componentType string
 	return statusMetrics, nil
 }
 
-func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientset,
+func NewNebulaExporter(ns, cluster, listenAddr string, client *kubernetes.Clientset,
 	config StaticConfig, maxRequests int) (*NebulaExporter, error) {
 	exporter := &NebulaExporter{
 		namespace:     ns,
+		cluster:       cluster,
 		listenAddress: listenAddr,
 		client:        client,
 		config:        config,
@@ -259,7 +263,7 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 			metricsType: "count",
 			desc: prometheus.NewDesc(
 				prometheus.BuildFQName(Namespace, c, "count"),
-				"", []string{"instanceName", "namespace", "componentType"}, nil),
+				"", []string{"instanceName", "namespace", "cluster", "componentType"}, nil),
 		}
 	}
 
@@ -287,11 +291,11 @@ func NewNebulaExporter(ns string, listenAddr string, client *kubernetes.Clientse
 	exporter.mux.Handle("/metrics", metricsHandler)
 
 	exporter.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("ok"))
+		_, _ = w.Write([]byte("ok"))
 	})
 
 	exporter.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte(`
+		_, _ = w.Write([]byte(`
 			<html>
 			<head><title>Nebula Exporter </title></head>
 			<body>
@@ -330,6 +334,7 @@ func (exporter *NebulaExporter) CollectMetrics(
 	name string,
 	componentType string,
 	namespace string,
+	cluster string,
 	metrics []string,
 	ch chan<- prometheus.Metric) {
 	if len(metrics) == 0 {
@@ -345,6 +350,7 @@ func (exporter *NebulaExporter) CollectMetrics(
 				ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, values,
 					name,
 					namespace,
+					cluster,
 					componentType,
 				)
 			}
@@ -363,6 +369,7 @@ func (exporter *NebulaExporter) CollectMetrics(
 			ch <- prometheus.MustNewConstMetric(metric.desc, prometheus.GaugeValue, v,
 				name,
 				namespace,
+				cluster,
 				componentType,
 			)
 		}
@@ -393,7 +400,7 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
-			exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, metrics, ch)
+			exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, Cluster, metrics, ch)
 		}()
 
 		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, item.ComponentType)
@@ -401,7 +408,7 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, statusMetrics, ch)
+		exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, Cluster, statusMetrics, ch)
 	}
 
 	wg.Wait()
@@ -411,7 +418,11 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 	klog.Info("Begin Collect Nebula Metrics")
 
-	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(), metav1.ListOptions{})
+	listOpts := metav1.ListOptions{}
+	if exporter.cluster != "" {
+		listOpts.LabelSelector = fmt.Sprintf("%s=%s", ClusterLabelKey, exporter.cluster)
+	}
+	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(), listOpts)
 	if err != nil {
 		klog.Error(err)
 		return
@@ -422,7 +433,14 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 
 	for _, item := range podLists.Items {
 		pod := item
-		_, ok := pod.Labels[ComponentLabelKey]
+
+		componentType, ok := pod.Labels[ComponentLabelKey]
+		if !ok {
+			wg.Done()
+			continue
+		}
+
+		cluster, ok := pod.Labels[ClusterLabelKey]
 		if !ok {
 			wg.Done()
 			continue
@@ -441,8 +459,6 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 			continue
 		}
 
-		componentType := pod.Labels[ComponentLabelKey]
-
 		go func() {
 			defer wg.Done()
 			klog.Infof("Collect %s %s:%d Metrics ", strings.ToUpper(componentType), pod.Name, podHttpPort)
@@ -455,7 +471,7 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 				return
 			}
 
-			exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, metrics, ch)
+			exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, cluster, metrics, ch)
 		}()
 
 		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, componentType)
@@ -466,7 +482,7 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, statusMetrics, ch)
+		exporter.CollectMetrics(pod.Name, componentType, pod.Namespace, cluster, statusMetrics, ch)
 	}
 
 	wg.Wait()
@@ -508,7 +524,7 @@ func (exporter *NebulaExporter) buildMetricMap(
 		metricsType: labels[last],
 		desc: prometheus.NewDesc(
 			prometheus.BuildFQName(Namespace, component.String(), metricName),
-			"", []string{"instanceName", "namespace", "componentType"},
+			"", []string{"instanceName", "namespace", "cluster", "componentType"},
 			nil),
 	}
 	return exporter

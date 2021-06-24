@@ -31,6 +31,10 @@ func main() {
 			"The namespace which nebula in").
 			Default("default").String()
 
+		cluster = kingpin.Flag("cluster",
+			"The cluster name for nebula, default get metrics of all clusters in the namespace.").
+			Default("").String()
+
 		kubeconfig = kingpin.Flag("kube-config",
 			"The kubernetes config file").
 			Default("").String()
@@ -64,7 +68,7 @@ func main() {
 			klog.Fatalf("create k8s client failed: %v", err)
 		}
 
-		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *listenAddr, restClient, exporter.StaticConfig{}, *maxRequest)
+		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *cluster, *listenAddr, restClient, exporter.StaticConfig{}, *maxRequest)
 		if err != nil {
 			klog.Fatal(err)
 		}
@@ -79,7 +83,7 @@ func main() {
 			klog.Fatalf("unmarshal failed: %v", err)
 		}
 
-		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *listenAddr, nil, config, *maxRequest)
+		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *cluster, *listenAddr, nil, config, *maxRequest)
 		if err != nil {
 			klog.Fatal(err)
 		}

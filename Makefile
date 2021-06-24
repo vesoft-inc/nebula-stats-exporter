@@ -15,7 +15,7 @@ all: check build push clean
 check: fmt vet lint
 
 build:
-	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build nebula-stats-exporter.go
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o nebula-stats-exporter main.go
 	docker build -t $(DockerUser)/nebula-stats-exporter:$(VERSION) .
 
 push:

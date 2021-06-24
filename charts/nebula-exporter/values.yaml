@@ -5,6 +5,8 @@
 nameOverride: ""
 fullnameOverride: ""
 
+cluster: ""
+
 replicaCount: 1
 
 startUp:
