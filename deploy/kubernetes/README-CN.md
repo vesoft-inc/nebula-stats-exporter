@@ -100,7 +100,6 @@ $ helm show values nebula-exporter/nebula-exporter
 | `ingress.ingressClass` | Ingress 的 ingressClass | `""` |
 | `podAnnotations` | Nebula stats exporter pod annotations | `{}` |
 | `podLabels` | Nebula stats exporter pod labels | `{}` |
-| `podLabels` | Nebula stats exporter resources | `{}` |
 | `livenessProbe` | Nebula stats exporter livenessProbe | `{"failureThreshold":2,"httpGet":{"path":"/health","scheme":"HTTP"},"initialDelaySeconds":30,"timeoutSeconds":10}` |
 | `nodeSelector` | Nebula stats exporter nodeSelector | `{}` |
 | `tolerations` | Nebula stats exporter tolerations | `{}` |
