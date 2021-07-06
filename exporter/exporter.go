@@ -381,7 +381,7 @@ func (exporter *NebulaExporter) CollectMetrics(
 	}
 }
 
-func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
+func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
 	podIpAddress := instance.EndpointIP
 	podHttpPort := instance.EndpointPort
 
@@ -404,7 +404,7 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, clusterName string, 
 			klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
 			return
 		}
-		exporter.CollectMetrics(instance.Name, instance.ComponentType, DefaultStaticNamespace, clusterName, metrics, ch)
+		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, metrics, ch)
 	}()
 
 	wg.Add(1)
@@ -419,7 +419,7 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, clusterName string, 
 			klog.Errorf("could not get status metrics from %s:%d", podIpAddress, podHttpPort)
 			return
 		}
-		exporter.CollectMetrics(instance.Name, instance.ComponentType, DefaultStaticNamespace, clusterName, statusMetrics, ch)
+		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, statusMetrics, ch)
 	}()
 }
 
@@ -429,7 +429,7 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 		cluster := cluster
 		for _, instance := range cluster.Instances {
 			instance := instance
-			exporter.collect(&wg, cluster.Name, instance, ch)
+			exporter.collect(&wg, DefaultStaticNamespace, cluster.Name, instance, ch)
 		}
 	}
 
@@ -473,7 +473,7 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 			continue
 		}
 
-		exporter.collect(&wg, clusterName, Instance{
+		exporter.collect(&wg, pod.Namespace, clusterName, Instance{
 			Name:          pod.Name,
 			EndpointIP:    podIpAddress,
 			EndpointPort:  podHttpPort,
