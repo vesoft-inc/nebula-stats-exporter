@@ -8,13 +8,13 @@
 
 [Nebula Graph](https://github.com/vesoft-inc/nebula-graph) exporter for Prometheus.
 
-Some of the metrics collections are:
+一些收集的 metrics 是：
 
-- Graphd's query metrics
-- Metad's heartbeat metrics
-- Storaged's CRUD edge and vertex metrics
+- Graphd 的查询 metrics
+- Metad 的心跳 metrics
+- Storaged 中 edge 和 vertex 的 CRUD 的 metrics
 
-## Building and running the exporter
+## 构建运行 exporter
 
 ```shell
 $ git clone https://vesoft-inc/nebula-stats-exporter.git
@@ -36,31 +36,31 @@ Flags:
       --version                 Show application version.
 ```
 
-The `--bare-metal-config` file examples:
+`--bare-metal-config` 配置文件例子:
 
 ```yaml
-clusters:                                   # a list of clusters you want to monitor
-  - name: nebula                            # the cluster name
-    instances:                              # a list of instances for this cluster
-      - name: metad0                        # the instance name
-        endpointIP: 192.168.10.131          # the ip of this instance
-        endpointPort: 19559                 # the port of this instance
-        componentType: metad                # the component type of this instance, optional value metad, graphd and storaged.
+clusters:                                   # 您想要监控的 cluster 列表
+  - name: nebula                            # cluster 的名称
+    instances:                              # cluster 中 instance 列表
+      - name: metad0                        # instance 的名称
+        endpointIP: 192.168.10.131          # instance 的 ip
+        endpointPort: 19559                 # instance 的端口
+        componentType: metad                # instance 的组建类型, optional value metad, graphd and storaged.
       - ...
-# Deprecated: use clusters instead.
-nebulaItems:                                # same as clusters/instances, the default cluster name is '_nebula'
-  - instanceName: metad0                    # same as clusters/instances/name
-    endpointIP: 192.168.10.131              # same as clusters/instances/endpointIP
-    endpointPort: 19559                     # same as clusters/instances/endpointPort
-    componentType: metad                    # same as clusters/instances/componentType
+# 废弃: 使用 clusters 来替换
+nebulaItems:                                # 类似 clusters/instances, 默认的 cluster 名称为 '_nebula'
+  - instanceName: metad0                    # 类似 clusters/instances/name
+    endpointIP: 192.168.10.131              # 类似 clusters/instances/endpointIP
+    endpointPort: 19559                     # 类似 clusters/instances/endpointPort
+    componentType: metad                    # 类似 clusters/instances/componentType
   - ...
 ```
 
-_See [config.yaml](deploy/bare-metal/config.yaml) for details._
+_详情请见 [config.yaml](deploy/bare-metal/config.yaml) 。_
 
-## Basic Prometheus Configuration
+## 基本的 Prometheus 配置
 
-Add a block to the `scrape_configs` of your prometheus.yaml config file:
+在 prometheus.yaml 配置文件的 `scrape_configs` 中添加一个配置块：
 
 ```yaml
 scrape_configs:
@@ -69,33 +69,33 @@ scrape_configs:
       - targets: ['<<NEBULA_STATS_EXPORTER_HOSTNAME>>:9100'] # nebula-stats-exporter metrics endpoints
 ```
 
-And adjust the host name `NEBULA_STATS_EXPORTER_HOSTNAME` accordingly.
+并相应地调整主机名 `NEBULA_STATS_EXPORTER_HOSTNAME` 。
 
-## Run with Docker
+## 使用 Docker 运行
 
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
     vesoft/nebula-stats-exporter:v0.0.4 --bare-metal --bare-metal-config=/config.yaml
 
-# For example:
+# 例如:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
     vesoft/nebula-stats-exporter:v0.0.4 --bare-metal --bare-metal-config=/config.yaml
 ```
 
-## Run on Bare Metal
+## 在裸机上运行
 
-[Here](deploy/bare-metal/README.md) is an introduction to deploy on Bare Metal.
+[这里](deploy/bare-metal/README-CN.md)有一个在裸机上部署的介绍。
 
-## Run on Kubernetes
+## 在 Kubernetes 中运行
 
-[Here](deploy/kubernetes/README.md) is an introduction to deploy on Kubernetes.
+[这里](deploy/kubernetes/README-CN.md)有一个在 Kubernetes 中部署的介绍.
 
-## Import grafana config
+## 导入 grafana 配置
 
-Please import [nebula-grafana.json](deploy/grafana/nebula-grafana.json) into your grafana.
+请将 [nebula-grafana.json](deploy/grafana/nebula-grafana.json) 导入到您的 grafana 中。
 
-Wait a while, then you can see the charts in grafana.
+等待一会儿， 接下来您可以在 grafana 中看到图表了。
 
 ![](https://user-images.githubusercontent.com/51590253/84129424-860abb80-aa74-11ea-9208-c5a66cade0f8.gif)

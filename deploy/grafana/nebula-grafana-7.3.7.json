@@ -29,7 +29,9 @@
       ],
       "datasource": null,
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {}
+        },
         "overrides": []
       },
       "format": "none",
@@ -120,7 +122,9 @@
       ],
       "datasource": null,
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {}
+        },
         "overrides": []
       },
       "format": "none",
@@ -208,7 +212,9 @@
       ],
       "datasource": null,
       "fieldConfig": {
-        "defaults": {},
+        "defaults": {
+          "custom": {}
+        },
         "overrides": []
       },
       "format": "none",
@@ -287,181 +293,6 @@
       "valueName": "current"
     },
     {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "graph": false,
-              "legend": false,
-              "tooltip": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 3
-      },
-      "id": 46,
-      "options": {
-        "graph": {},
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltipOptions": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "7.5.2",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "nebula_graphd_slow_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "instant": false,
-          "interval": "30s",
-          "legendFormat": "",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "nebula_graphd_slow_query_latency_us_p95_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "hide": false,
-          "interval": "30s",
-          "legendFormat": "",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Slow Query Latency",
-      "type": "timeseries"
-    },
-    {
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "graph": false,
-              "legend": false,
-              "tooltip": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 24,
-        "x": 0,
-        "y": 9
-      },
-      "id": 44,
-      "options": {
-        "graph": {},
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltipOptions": {
-          "mode": "single"
-        }
-      },
-      "pluginVersion": "7.5.2",
-      "targets": [
-        {
-          "exemplar": true,
-          "expr": "nebula_graphd_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "interval": "30s",
-          "legendFormat": "",
-          "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "nebula_graphd_query_latency_us_p95_53{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "hide": false,
-          "interval": "30s",
-          "legendFormat": "",
-          "refId": "B"
-        }
-      ],
-      "timeFrom": null,
-      "timeShift": null,
-      "title": "Query Latency",
-      "type": "timeseries"
-    },
-    {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
@@ -469,20 +300,20 @@
       "datasource": null,
       "fieldConfig": {
         "defaults": {
-          "unit": "short"
+          "custom": {}
         },
         "overrides": []
       },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 3
       },
       "hiddenSeries": false,
-      "id": 40,
+      "id": 8,
       "legend": {
         "avg": false,
         "current": false,
@@ -499,7 +330,7 @@
         "alertThreshold": true
       },
       "percentage": false,
-      "pluginVersion": "7.5.2",
+      "pluginVersion": "7.3.7",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -509,16 +340,215 @@
       "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
-          "expr": "nebula_graphd_num_query_errors_rate_60{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "interval": "60s",
+          "expr": "nebula_graphd_slow_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "interval": "",
           "legendFormat": "",
           "refId": "A"
         },
         {
-          "exemplar": true,
+          "expr": "nebula_graphd_slow_query_latency_us_p95_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Slow Query Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "hiddenSeries": false,
+      "id": 9,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.3.7",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "nebula_graphd_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "expr": "nebula_graphd_query_latency_us_p95_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Query Latency",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": null,
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 7,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "hiddenSeries": false,
+      "id": 10,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
+      "percentage": false,
+      "pluginVersion": "7.3.7",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "nebula_graphd_num_query_errors_rate_60{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
           "expr": "nebula_graphd_num_query_errors_sum_60{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "hide": false,
           "interval": "",
           "legendFormat": "",
           "refId": "B"
@@ -566,182 +596,210 @@
       }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": null,
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "graph": false,
-              "legend": false,
-              "tooltip": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
+          "custom": {}
         },
         "overrides": []
       },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 24
       },
-      "id": 36,
+      "hiddenSeries": false,
+      "id": 11,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
       "options": {
-        "graph": {},
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltipOptions": {
-          "mode": "single"
-        }
+        "alertThreshold": true
       },
-      "pluginVersion": "7.5.2",
+      "percentage": false,
+      "pluginVersion": "7.3.7",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
           "expr": "nebula_graphd_num_queries_rate_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "interval": "30s",
+          "interval": "",
           "legendFormat": "",
           "refId": "A"
         },
         {
-          "exemplar": true,
           "expr": "nebula_graphd_num_queries_sum_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "hide": false,
-          "interval": "30s",
+          "interval": "",
           "legendFormat": "",
           "refId": "B"
         }
       ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Number  Queries",
-      "type": "timeseries"
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     },
     {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
       "datasource": null,
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 10,
-            "gradientMode": "none",
-            "hideFrom": {
-              "graph": false,
-              "legend": false,
-              "tooltip": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "never",
-            "spanNulls": true
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "short"
+          "custom": {}
         },
         "overrides": []
       },
+      "fill": 1,
+      "fillGradient": 0,
       "gridPos": {
-        "h": 6,
+        "h": 7,
         "w": 24,
         "x": 0,
-        "y": 27
+        "y": 31
       },
-      "id": 49,
+      "hiddenSeries": false,
+      "id": 12,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
       "options": {
-        "graph": {},
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltipOptions": {
-          "mode": "single"
-        }
+        "alertThreshold": true
       },
-      "pluginVersion": "7.5.2",
+      "percentage": false,
+      "pluginVersion": "7.3.7",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
       "targets": [
         {
-          "exemplar": true,
           "expr": "nebula_graphd_num_slow_queries_rate_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "interval": "30s",
+          "interval": "",
           "legendFormat": "",
           "refId": "A"
         },
         {
-          "exemplar": true,
           "expr": "nebula_graphd_num_slow_queries_sum_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
-          "hide": false,
-          "interval": "30s",
+          "interval": "",
           "legendFormat": "",
           "refId": "B"
         }
       ],
+      "thresholds": [],
       "timeFrom": null,
+      "timeRegions": [],
       "timeShift": null,
       "title": "Number Slow Queries",
-      "type": "timeseries"
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 27,
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -774,11 +832,8 @@
         "multi": false,
         "name": "namespace",
         "options": [],
-        "query": {
-          "query": "label_values(nebula_metad_count, namespace)",
-          "refId": "Prometheus-namespace-Variable-Query"
-        },
-        "refresh": 2,
+        "query": "label_values(nebula_metad_count, namespace)",
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,
@@ -799,11 +854,8 @@
         "multi": false,
         "name": "cluster",
         "options": [],
-        "query": {
-          "query": "label_values(nebula_metad_count{namespace=\"$namespace\"}, cluster)",
-          "refId": "Prometheus-cluster-Variable-Query"
-        },
-        "refresh": 2,
+        "query": "label_values(nebula_metad_count{namespace=\"$namespace\"}, cluster)",
+        "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
         "sort": 1,

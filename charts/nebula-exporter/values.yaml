@@ -12,12 +12,12 @@ replicaCount: 1
 startUp:
   # The nebula metrics server listening port
   listenPort: 9100
-  # Maximum number of parallel scrape requests, use 0 to disable.
+  # Maximum number of parallel scrape requests, use 0 for no limit.
   maxRequests: 40
 
 image:
   repository: vesoft/nebula-stats-exporter
-  tag: v0.0.3
+  tag: v0.0.4
   pullPolicy: IfNotPresent
 
 serviceAccount:
@@ -33,6 +33,11 @@ service:
   type: ClusterIP
   port: 9100
   annotations: {}
+
+serviceMonitor:
+  enabled: false
+  prometheusServiceMatchLabels: {}
+  # release: prometheus
 
 ingress:
   enabled: false

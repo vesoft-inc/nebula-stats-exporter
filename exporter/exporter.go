@@ -29,9 +29,9 @@ const (
 	MetadComponent    ComponentType = "metad"
 	StoragedComponent ComponentType = "storaged"
 
-	// Namespace represents the prometheus FQName
-	Namespace = "nebula"
-	Cluster   = "nebula"
+	// FQNamespace represents the prometheus FQName
+	FQNamespace            = "nebula"
+	DefaultStaticNamespace = "nebula"
 )
 
 func (ct ComponentType) String() string {
@@ -262,7 +262,7 @@ func NewNebulaExporter(ns, cluster, listenAddr string, client *kubernetes.Client
 		exporter.metricMap[k] = metrics{
 			metricsType: "count",
 			desc: prometheus.NewDesc(
-				prometheus.BuildFQName(Namespace, c, "count"),
+				prometheus.BuildFQName(FQNamespace, c, "count"),
 				"", []string{"instanceName", "namespace", "cluster", "componentType"}, nil),
 		}
 	}
@@ -378,37 +378,42 @@ func (exporter *NebulaExporter) CollectMetrics(
 
 func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
 	var wg sync.WaitGroup
-	wg.Add(len(exporter.config.NebulaItems))
+	for _, cluster := range exporter.config.Clusters {
+		cluster := cluster
+		wg.Add(len(cluster.Instances))
+		for _, instance := range cluster.Instances {
+			instance := instance
+			podIpAddress := instance.EndpointIP
+			podHttpPort := instance.EndpointPort
 
-	for _, nebulaItem := range exporter.config.NebulaItems {
-		item := nebulaItem
-		podIpAddress := item.EndpointIP
-		podHttpPort := item.EndpointPort
-
-		if podHttpPort == 0 {
-			continue
-		}
-
-		go func() {
-			defer wg.Done()
-			klog.Infof("Collect %s %s:%d Metrics ", strings.ToUpper(item.ComponentType), item.InstanceName, item.EndpointPort)
-			metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
-			if len(metrics) == 0 {
-				klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
+			if podHttpPort == 0 {
+				wg.Done()
+				continue
 			}
+
+			go func() {
+				defer wg.Done()
+				klog.Infof("Collect %s:%s %s:%d Metrics ",
+					cluster.Name, strings.ToUpper(instance.ComponentType),
+					instance.Name, instance.EndpointPort)
+				metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
+				if len(metrics) == 0 {
+					klog.Infof("metrics from %s:%d was empty", podIpAddress, podHttpPort)
+				}
+				if err != nil {
+					klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
+					return
+				}
+				exporter.CollectMetrics(instance.Name, instance.ComponentType, DefaultStaticNamespace, cluster.Name, metrics, ch)
+			}()
+
+			statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, instance.ComponentType)
 			if err != nil {
-				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
+				klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
-			exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, Cluster, metrics, ch)
-		}()
-
-		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort, item.ComponentType)
-		if err != nil {
-			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
-			return
+			exporter.CollectMetrics(instance.Name, instance.ComponentType, DefaultStaticNamespace, cluster.Name, statusMetrics, ch)
 		}
-		exporter.CollectMetrics(item.InstanceName, item.ComponentType, Namespace, Cluster, statusMetrics, ch)
 	}
 
 	wg.Wait()
@@ -523,7 +528,7 @@ func (exporter *NebulaExporter) buildMetricMap(
 	exporter.metricMap[k] = metrics{
 		metricsType: labels[last],
 		desc: prometheus.NewDesc(
-			prometheus.BuildFQName(Namespace, component.String(), metricName),
+			prometheus.BuildFQName(FQNamespace, component.String(), metricName),
 			"", []string{"instanceName", "namespace", "cluster", "componentType"},
 			nil),
 	}
