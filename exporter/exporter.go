@@ -236,6 +236,9 @@ func NewNebulaExporter(ns, cluster, listenAddr string, client *kubernetes.Client
 		"num_forward_tranx",
 		"num_delete_edges_errors",
 		"num_update_vertex",
+		"num_delete_tags_errors",
+		"num_delete_tags",
+		"delete_tags",
 	}
 
 	for _, storagedLabel := range storagedLabels {
@@ -324,7 +327,7 @@ func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {
 func (exporter *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
 	now := time.Now()
 	klog.Infoln("Start collect")
-	defer func(){
+	defer func() {
 		klog.Infof("Complete collect, time elapse %s", time.Since(now))
 	}()
 
@@ -527,21 +530,34 @@ func (exporter *NebulaExporter) buildMetricMap(
 
 func convertToMap(metrics []string) map[string]string {
 	matches := make(map[string]string)
-	for t := 0; ; t += 2 {
-		if t+1 >= len(metrics) {
-			break
+	// match metric format
+	// value=0
+	// name=num_queries.rate.60
+	if strings.Contains(metrics[0], "value=") {
+		for t := 0; ; t += 2 {
+			if t+1 >= len(metrics) {
+				break
+			}
+			ok, value := getRValue(metrics[t])
+			if !ok {
+				continue
+			}
+			ok, metric := getRValue(metrics[t+1])
+			if !ok {
+				continue
+			}
+			if value != "" && metric != "" {
+				matches[metric] = value
+			}
 		}
-		ok, value := getRValue(metrics[t])
-		if !ok {
-			continue
-		}
-		ok, metric := getRValue(metrics[t+1])
-		if !ok {
-			continue
-		}
-		if value != "" && metric != "" {
-			matches[metric] = value
-		}
+		return matches
+	}
+
+	// match metric format
+	// slow_query_latency_us.p95.5=0
+	for _, metric := range metrics {
+		s := strings.Split(metric, "=")
+		matches[s[0]] = s[1]
 	}
 	return matches
 }
