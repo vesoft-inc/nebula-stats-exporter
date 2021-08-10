@@ -17,7 +17,7 @@
 ## 构建运行 exporter
 
 ```shell
-$ git clone https://vesoft-inc/nebula-stats-exporter.git
+$ git clone https://github.com/vesoft-inc/nebula-stats-exporter.git
 $ cd nebula-stats-exporter
 $ make build
 $ ./nebula-stats-exporter --help
