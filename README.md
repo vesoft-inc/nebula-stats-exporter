@@ -17,7 +17,7 @@ Some of the metrics collections are:
 ## Building and running the exporter
 
 ```shell
-$ git clone https://vesoft-inc/nebula-stats-exporter.git
+$ git clone https://github.com/vesoft-inc/nebula-stats-exporter.git
 $ cd nebula-stats-exporter
 $ make build
 $ ./nebula-stats-exporter --help
