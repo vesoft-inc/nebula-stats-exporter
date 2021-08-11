@@ -557,6 +557,9 @@ func convertToMap(metrics []string) map[string]string {
 	// slow_query_latency_us.p95.5=0
 	for _, metric := range metrics {
 		s := strings.Split(metric, "=")
+		if len(s) != 2 {
+			continue
+		}
 		matches[s[0]] = s[1]
 	}
 	return matches
