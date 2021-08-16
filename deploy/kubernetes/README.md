@@ -85,7 +85,7 @@ The following table lists is the configurable parameters of the chart and their 
 | `startUp.listenPort` | The nebula metrics server listening port | `9100` |
 | `startUp.maxRequests` | Maximum number of parallel scrape requests, use 0 for no limit | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
-| `image.tag` | Nebula stats exporter image tag | `v0.0.4` |
+| `image.tag` | Nebula stats exporter image tag | `v0.0.5` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |
 | `serviceAccount.create` | Specifies whether a service account should be created | `true` |
 | `serviceAccount.annotations` | Annotations to add to the service account | `{}` |

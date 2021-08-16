@@ -17,7 +17,7 @@ startUp:
 
 image:
   repository: vesoft/nebula-stats-exporter
-  tag: v0.0.4
+  tag: v0.0.5
   pullPolicy: IfNotPresent
 
 serviceAccount:
