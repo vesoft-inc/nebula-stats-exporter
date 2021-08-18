@@ -85,7 +85,7 @@ $ helm show values nebula-exporter/nebula-exporter
 | `startUp.listenPort` | Nebula metrics 服务监听端口 | `9100` |
 | `startUp.maxRequests` | 最大并行抓取请求数，使用 0 则不限制 | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
-| `image.tag` | Nebula stats exporter image tag | `v0.0.4` |
+| `image.tag` | Nebula stats exporter image tag | `v0.0.5` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |
 | `serviceAccount.create` | 指定是否应创建 service account | `true` |
 | `serviceAccount.annotations` | 添加到 service account 的 annotations | `{}` |

@@ -95,7 +95,7 @@ func main() {
 				})
 			}
 			config.Clusters = append(config.Clusters, exporter.Cluster{
-				Name:      exporter.NebulaItemClusterName,
+				Name:      exporter.DefaultClusterName,
 				Instances: instances,
 			})
 			config.NebulaItems = nil

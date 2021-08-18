@@ -1,11 +1,11 @@
 package exporter
 
-const NebulaItemClusterName = "_nebula"
+const DefaultClusterName = "default"
 
 type (
 	StaticConfig struct {
-		Version     string       `yaml:"version"`
-		Clusters    []Cluster    `yaml:"clusters"`
+		Version  string    `yaml:"version"`
+		Clusters []Cluster `yaml:"clusters"`
 		// Deprecated: use Clusters instead.
 		// TODO: Remove NebulaItems
 		NebulaItems []NebulaItem `yaml:"nebulaItems"`

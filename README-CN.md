@@ -76,12 +76,12 @@ scrape_configs:
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.4 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
 
 # 例如:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.4 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## 在裸机上运行
