@@ -23,6 +23,7 @@ type ComponentType string
 
 const (
 	ComponentLabelKey = "app.kubernetes.io/component"
+	MonitorLabelKey   = "monitoring.coreos.com/cluster"
 	ClusterLabelKey   = "app.kubernetes.io/cluster"
 
 	GraphdComponent   ComponentType = "graphd"
@@ -459,9 +460,12 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 			continue
 		}
 
-		clusterName, ok := pod.Labels[ClusterLabelKey]
+		clusterName, ok := pod.Labels[MonitorLabelKey]
 		if !ok {
-			continue
+			clusterName, ok = pod.Labels[ClusterLabelKey]
+			if !ok {
+				continue
+			}
 		}
 
 		podIpAddress := pod.Status.PodIP
