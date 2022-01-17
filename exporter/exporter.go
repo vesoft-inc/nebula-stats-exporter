@@ -104,15 +104,15 @@ func (exporter *NebulaExporter) CollectMetrics(
 	componentType string,
 	namespace string,
 	cluster string,
-	metrics []string,
+	originMetrics []string,
 	ch chan<- prometheus.Metric) {
-	if len(metrics) == 0 {
+	if len(originMetrics) == 0 {
 		return
 	}
 
-	matches := convertToMap(metrics)
-	for metric, value := range matches {
-		v, err := strconv.ParseFloat(value.Value, 64)
+	metrics := convertToMetrics(originMetrics)
+	for _, matric := range metrics {
+		v, err := strconv.ParseFloat(matric.Value, 64)
 		if err != nil {
 			continue
 		}
@@ -125,14 +125,14 @@ func (exporter *NebulaExporter) CollectMetrics(
 			labelValues = append(labelValues, namespace)
 		}
 
-		for key, value := range value.Labels {
+		for key, value := range matric.Labels {
 			labels = append(labels, key)
 			labelValues = append(labelValues, value)
 		}
 
 		ch <- prometheus.MustNewConstMetric(
 			prometheus.NewDesc(
-				fmt.Sprintf("%s_%s_%s", FQNamespace, componentType, strings.ReplaceAll(metric, ".", "_")),
+				fmt.Sprintf("%s_%s_%s", FQNamespace, componentType, strings.ReplaceAll(matric.Name, ".", "_")),
 				"",
 				labels,
 				nil,
@@ -169,12 +169,11 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterNa
 
 	go func() {
 		defer wg.Done()
-		statusMetrics, err := getNebulaComponentStatus(podIpAddress, podHttpPort)
-		if err != nil {
-			klog.Errorf("get status metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
-			return
+		statusMetrics := "count=1"
+		if !isNebulaComponentRunning(podIpAddress, podHttpPort) {
+			statusMetrics = "count=0"
 		}
-		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, statusMetrics, ch)
+		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, []string{statusMetrics}, ch)
 	}()
 }
 

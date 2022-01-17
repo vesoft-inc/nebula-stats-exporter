@@ -30,20 +30,20 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 	return metrics, nil
 }
 
-func getNebulaComponentStatus(ipAddress string, port int32) ([]string, error) {
+func isNebulaComponentRunning(ipAddress string, port int32) bool {
 	httpClient := http.Client{
 		Timeout: time.Second * 2,
 	}
 
 	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/status", ipAddress, port))
 	if err != nil {
-		return nil, err
+		return false
 	}
 	defer resp.Body.Close()
 
 	bytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		return false
 	}
 
 	type nebulaStatus struct {
@@ -53,14 +53,8 @@ func getNebulaComponentStatus(ipAddress string, port int32) ([]string, error) {
 
 	var status nebulaStatus
 	if err := json.Unmarshal(bytes, &status); err != nil {
-		return nil, err
+		return false
 	}
 
-	count := 0
-	if status.Status == "running" {
-		count = 1
-	}
-	statusMetrics := []string{fmt.Sprintf("count=%d", count)}
-
-	return statusMetrics, nil
+	return status.Status == "running"
 }

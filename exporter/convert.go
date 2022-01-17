@@ -4,29 +4,34 @@ import (
 	"strings"
 )
 
-type MetricValue struct {
+type BaseMetric struct {
+	Name   string
 	Value  string
 	Labels map[string]string
 }
 
-func convertToMap(metrics []string) map[string]MetricValue {
-	matches := make(map[string]MetricValue, len(metrics))
+func convertToMetrics(originMetrics []string) []BaseMetric {
+	metrics := make([]BaseMetric, len(originMetrics))
 	/*
 		match metric format
 		slow_query_latency_us.p95.5=0
 		slow_query_latency_us{space=nba}.p95.5=0
 	*/
-	for _, metric := range metrics {
-		metric, label := splitMetric(metric)
+	for _, origin := range originMetrics {
+		metric, label := splitMetric(origin)
 
 		s := strings.Split(metric, "=")
 		if len(s) != 2 {
 			continue
 		}
-		matches[s[0]] = MetricValue{Value: s[1], Labels: label}
+		metrics = append(metrics, BaseMetric{
+			Name:   s[0],
+			Value:  s[1],
+			Labels: label,
+		})
 	}
 
-	return matches
+	return metrics
 }
 
 // split slow_query_latency_us{space=nba}.p95.5=0 => slow_query_latency_us.p95.5=0, map[space:nba]
