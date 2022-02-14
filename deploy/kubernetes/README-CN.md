@@ -20,7 +20,7 @@ _访问 [helm repo](https://helm.sh/docs/helm/helm_repo/) 来查看命令文档�
 
 ```shell
 export NEBULA_EXPORTER_NAMESPACE=nebula     # 您想要安装 nebula exporter 的 namespace
-export CHART_VERSION=v0.2.0                 # Nebula Exporter 的 chart 版本
+export CHART_VERSION=v0.0.6                 # Nebula Exporter 的 chart 版本
 
 $ kubectl create namespace "${NEBULA_EXPORTER_NAMESPACE}" # 如果您已经创建了，请跳过
 $ helm install nebula-exporter nebula-exporter/nebula-exporter \
@@ -35,7 +35,7 @@ nebula-exporter-5964b765c9-4xfkm   1/1     Running   0          44s
 
 注意:
 
-* `${chart_version}` 表示 Nebula Exporter chart 的版本。 例如，v0.2.0 。 您可以通过运行 `helm search repo -l nebula-exporter` 命令来查看当前支持的版本。
+* `${chart_version}` 表示 Nebula Exporter chart 的版本。 例如，v0.0.6 。 您可以通过运行 `helm search repo -l nebula-exporter` 命令来查看当前支持的版本。
 
 _访问 [helm install](https://helm.sh/docs/helm/helm_install/) 来查看命令文档。_
 
@@ -85,7 +85,7 @@ $ helm show values nebula-exporter/nebula-exporter
 | `startUp.listenPort` | Nebula metrics 服务监听端口 | `9100` |
 | `startUp.maxRequests` | 最大并行抓取请求数，使用 0 则不限制 | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
-| `image.tag` | Nebula stats exporter image tag | `v0.0.5` |
+| `image.tag` | Nebula stats exporter image tag | `v0.0.6` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |
 | `serviceAccount.create` | 指定是否应创建 service account | `true` |
 | `serviceAccount.annotations` | 添加到 service account 的 annotations | `{}` |

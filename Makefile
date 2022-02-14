@@ -1,7 +1,7 @@
 PROJECT="nebula-exporter"
 
 GO ?= go
-VERSION ?= v0.0.5
+VERSION ?= v0.0.6
 DockerUser=vesoft
 
 ifeq (,$(shell go env GOBIN))

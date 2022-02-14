@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/vesoft-inc/nebula/raw/master/docs/logo.png"/>
+  <img src="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/nebulagraph-logo.png"/>
   <br> <a href="README.md">English</a> | <a href="README-CN.md">中文</a>
   <br>A distributed, scalable, lightning-fast graph database<br>
 </p>
@@ -47,13 +47,6 @@ clusters:                                   # a list of clusters you want to mon
         endpointPort: 19559                 # the port of this instance
         componentType: metad                # the component type of this instance, optional value metad, graphd and storaged.
       - ...
-# Deprecated: use clusters instead.
-nebulaItems:                                # same as clusters/instances, the default cluster name is '_nebula'
-  - instanceName: metad0                    # same as clusters/instances/name
-    endpointIP: 192.168.10.131              # same as clusters/instances/endpointIP
-    endpointPort: 19559                     # same as clusters/instances/endpointPort
-    componentType: metad                    # same as clusters/instances/componentType
-  - ...
 ```
 
 _See [config.yaml](deploy/bare-metal/config.yaml) for details._
@@ -76,12 +69,12 @@ And adjust the host name `NEBULA_STATS_EXPORTER_HOSTNAME` accordingly.
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
 
 # For example:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## Run on Bare Metal
