@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/vesoft-inc/nebula/raw/master/docs/logo.png"/>
+  <img src="https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/nebulagraph-logo.png"/>
   <br> <a href="README.md">English</a> | <a href="README-CN.md">中文</a>
   <br>A distributed, scalable, lightning-fast graph database<br>
 </p>
@@ -47,13 +47,6 @@ clusters:                                   # 您想要监控的 cluster 列表
         endpointPort: 19559                 # instance 的端口
         componentType: metad                # instance 的组建类型, optional value metad, graphd and storaged.
       - ...
-# 废弃: 使用 clusters 来替换
-nebulaItems:                                # 类似 clusters/instances, 默认的 cluster 名称为 '_nebula'
-  - instanceName: metad0                    # 类似 clusters/instances/name
-    endpointIP: 192.168.10.131              # 类似 clusters/instances/endpointIP
-    endpointPort: 19559                     # 类似 clusters/instances/endpointPort
-    componentType: metad                    # 类似 clusters/instances/componentType
-  - ...
 ```
 
 _详情请见 [config.yaml](deploy/bare-metal/config.yaml) 。_
@@ -76,12 +69,12 @@ scrape_configs:
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
 
 # 例如:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.5 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## 在裸机上运行

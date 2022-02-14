@@ -17,13 +17,6 @@ clusters:                                   # a list of clusters you want to mon
         endpointPort: 19559                 # the port of this instance
         componentType: metad                # the component type of this instance, optional value metad, graphd and storaged.
       - ...
-# Deprecated: use clusters instead.
-nebulaItems:                                # same as clusters/instances, the default cluster name is '_nebula'
-  - instanceName: metad0                    # same as clusters/instances/name
-    endpointIP: 192.168.10.131              # same as clusters/instances/endpointIP
-    endpointPort: 19559                     # same as clusters/instances/endpointPort
-    componentType: metad                    # same as clusters/instances/componentType
-  - ...
 ```
 
 _See [config.yaml](config.yaml) for details._
