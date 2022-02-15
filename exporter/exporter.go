@@ -111,13 +111,13 @@ func (exporter *NebulaExporter) CollectMetrics(
 	}
 
 	metrics := convertToMetrics(originMetrics)
-	for _, matric := range metrics {
-		v, err := strconv.ParseFloat(matric.Value, 64)
+	for _, metric := range metrics {
+		v, err := strconv.ParseFloat(metric.Value, 64)
 		if err != nil {
 			continue
 		}
 
-		labels := []string{"cluster", "componentType", "instanceName"}
+		labels := []string{"nebula_cluster", "component_type", "instance_name"}
 		labelValues := []string{cluster, componentType, name}
 
 		if namespace != NonNamespace {
@@ -125,14 +125,14 @@ func (exporter *NebulaExporter) CollectMetrics(
 			labelValues = append(labelValues, namespace)
 		}
 
-		for key, value := range matric.Labels {
+		for key, value := range metric.Labels {
 			labels = append(labels, key)
 			labelValues = append(labelValues, value)
 		}
 
 		ch <- prometheus.MustNewConstMetric(
 			prometheus.NewDesc(
-				fmt.Sprintf("%s_%s_%s", FQNamespace, componentType, strings.ReplaceAll(matric.Name, ".", "_")),
+				fmt.Sprintf("%s_%s_%s", FQNamespace, componentType, strings.ReplaceAll(metric.Name, ".", "_")),
 				"",
 				labels,
 				nil,
