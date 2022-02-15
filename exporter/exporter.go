@@ -117,7 +117,8 @@ func (exporter *NebulaExporter) CollectMetrics(
 			continue
 		}
 
-		labels := []string{"nebula_cluster", "component_type", "instance_name"}
+		// TODO: uniform naming rules with _
+		labels := []string{"nebula_cluster", "componentType", "instanceName"}
 		labelValues := []string{cluster, componentType, name}
 
 		if namespace != NonNamespace {
