@@ -30,6 +30,27 @@ func getNebulaMetrics(ipAddress string, port int32) ([]string, error) {
 	return metrics, nil
 }
 
+func getNebulaRocksDBStats(ipAddress string, port int32) ([]string, error) {
+	httpClient := http.Client{
+		Timeout: time.Second * 2,
+	}
+
+	resp, err := httpClient.Get(fmt.Sprintf("http://%s:%d/rocksdb_stats", ipAddress, port))
+	if err != nil {
+		return []string{}, err
+	}
+	defer resp.Body.Close()
+
+	bytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return []string{}, err
+	}
+
+	metrics := strings.Split(strings.TrimSpace(string(bytes)), "\n")
+
+	return metrics, nil
+}
+
 func isNebulaComponentRunning(ipAddress string, port int32) bool {
 	httpClient := http.Client{
 		Timeout: time.Second * 2,
