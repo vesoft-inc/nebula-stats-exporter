@@ -158,6 +158,19 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterNa
 		instance.Name, instance.EndpointPort)
 
 	wg.Add(2)
+	if instance.ComponentType == "storaged" {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			rocksDBStatus, err := getNebulaRocksDBStats(podIpAddress, podHttpPort)
+			if err != nil {
+				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
+				return
+			}
+			exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, rocksDBStatus, ch)
+		}()
+	}
+	
 	go func() {
 		defer wg.Done()
 		metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
