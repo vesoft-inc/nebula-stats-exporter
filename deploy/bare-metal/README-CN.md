@@ -17,13 +17,6 @@ clusters:                                   # 您想要监控的 cluster 列表
         endpointPort: 19559                 # instance 的端口
         componentType: metad                # instance 的组建类型, optional value metad, graphd and storaged.
       - ...
-# 废弃: 使用 clusters 来替换
-nebulaItems:                                # 类似 clusters/instances, 默认的 cluster 名称为 '_nebula'
-  - instanceName: metad0                    # 类似 clusters/instances/name
-    endpointIP: 192.168.10.131              # 类似 clusters/instances/endpointIP
-    endpointPort: 19559                     # 类似 clusters/instances/endpointPort
-    componentType: metad                    # 类似 clusters/instances/componentType
-  - ...
 ```
 
 _详情请见 [config.yaml](config.yaml) 。_

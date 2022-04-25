@@ -8,11 +8,13 @@
 
 [Nebula Graph](https://github.com/vesoft-inc/nebula-graph) exporter for Prometheus.
 
-一些收集的 metrics 是：
+目前收集的 metrics 是：
 
-- Graphd 的查询 metrics
-- Metad 的心跳 metrics
-- Storaged 中 edge 和 vertex 的 CRUD 的 metrics
+- Graphd 的 metrics
+- Graphd space 级别的 metrics
+- Metad 的 metrics
+- Storaged 的 metrics
+- Stroaged 内置 rocksdb 的 metrics
 
 ## 构建运行 exporter
 
@@ -69,12 +71,12 @@ scrape_configs:
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
 
 # 例如:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## 在裸机上运行
