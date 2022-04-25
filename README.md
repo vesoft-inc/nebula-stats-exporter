@@ -8,11 +8,13 @@
 
 [Nebula Graph](https://github.com/vesoft-inc/nebula-graph) exporter for Prometheus.
 
-Some of the metrics collections are:
+The metrics currently collected are:
 
-- Graphd's query metrics
-- Metad's heartbeat metrics
-- Storaged's CRUD edge and vertex metrics
+- Graphd's metrics
+- Graphd's space level metrics
+- Metad's metrics
+- Storaged's metrics
+- Storaged's rocksdb metrics
 
 ## Building and running the exporter
 
@@ -69,12 +71,12 @@ And adjust the host name `NEBULA_STATS_EXPORTER_HOSTNAME` accordingly.
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
 
 # For example:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v0.0.6 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## Run on Bare Metal
