@@ -85,7 +85,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(nebula_metad_count{namespace=\"$namespace\", cluster=\"$cluster\"})",
+          "expr": "sum(nebula_metad_count{namespace=\"$namespace\", nebula_cluster=\"$cluster\"})",
           "format": "time_series",
           "interval": "60s",
           "legendFormat": "",
@@ -176,7 +176,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(nebula_graphd_count{namespace=\"$namespace\", cluster=\"$cluster\"})",
+          "expr": "sum(nebula_graphd_count{namespace=\"$namespace\", nebula_cluster=\"$cluster\"})",
           "interval": "60s",
           "legendFormat": "",
           "refId": "A"
@@ -264,7 +264,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(nebula_storaged_count{namespace=\"$namespace\", cluster=\"$cluster\"})",
+          "expr": "sum(nebula_storaged_count{namespace=\"$namespace\", nebula_cluster=\"$cluster\"})",
           "hide": false,
           "interval": "60s",
           "legendFormat": "",
@@ -354,7 +354,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nebula_graphd_slow_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_slow_query_latency_us_avg_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "instant": false,
           "interval": "30s",
           "legendFormat": "",
@@ -362,7 +362,7 @@
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_slow_query_latency_us_p95_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_slow_query_latency_us_p95_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "hide": false,
           "interval": "30s",
           "legendFormat": "",
@@ -442,14 +442,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nebula_graphd_query_latency_us_avg_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_query_latency_us_avg_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "interval": "30s",
           "legendFormat": "",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_query_latency_us_p95_53{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_query_latency_us_p95_53{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "hide": false,
           "interval": "30s",
           "legendFormat": "",
@@ -510,14 +510,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_query_errors_rate_60{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_query_errors_rate_60{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "interval": "60s",
           "legendFormat": "",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_query_errors_sum_60{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_query_errors_sum_60{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "hide": false,
           "interval": "",
           "legendFormat": "",
@@ -633,14 +633,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_queries_rate_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_queries_rate_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "interval": "30s",
           "legendFormat": "",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_queries_sum_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_queries_sum_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "hide": false,
           "interval": "30s",
           "legendFormat": "",
@@ -720,14 +720,14 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_slow_queries_rate_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_slow_queries_rate_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "interval": "30s",
           "legendFormat": "",
           "refId": "A"
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_num_slow_queries_sum_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_num_slow_queries_sum_5{namespace=\"$namespace\", nebula_cluster=\"$cluster\"}",
           "hide": false,
           "interval": "30s",
           "legendFormat": "",
@@ -796,7 +796,7 @@
         "multi": false,
         "name": "cluster",
         "options": [],
-        "query": "label_values(nebula_metad_count{namespace=\"$namespace\"}, cluster)",
+        "query": "label_values(nebula_metad_count{namespace=\"$namespace\"}, nebula_cluster)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
