@@ -35,6 +35,26 @@ func main() {
 			"The cluster name for nebula, default get metrics of all clusters in the namespace.").
 			Default("").String()
 
+		clusterLabelKey = kingpin.Flag("cluster-label-key",
+			"The cluster name label key.").
+			Default("").String()
+
+		selector = kingpin.Flag("selector",
+			"The selector (label query) to filter on pods.").
+			Default("").String()
+
+		graphPortName = kingpin.Flag("graph-port-name",
+			"The graph port name of pod to collect metrics.").
+			Default("http-graph").String()
+
+		metaPortName = kingpin.Flag("meta-port-name",
+			"The meta port name of pod to collect metrics.").
+			Default("http-meta").String()
+
+		storagePortName = kingpin.Flag("storage-port-name",
+			"The storage port name of pod to collect metrics.").
+			Default("http-storage").String()
+
 		kubeconfig = kingpin.Flag("kube-config",
 			"The kubernetes config file").
 			Default("").String()
@@ -56,21 +76,25 @@ func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
-	var nebulaExporter *exporter.NebulaExporter
+	nebulaExporter := &exporter.NebulaExporter{
+		Namespace:       *namespace,
+		Selector:        *selector,
+		Cluster:         *cluster,
+		ClusterLabelKey: *clusterLabelKey,
+		GraphPortName:   *graphPortName,
+		MetaPortName:    *metaPortName,
+		StoragePortName: *storagePortName,
+		ListenAddress:   *listenAddr,
+	}
+
 	if *bareMetal {
 		raw, err := ioutil.ReadFile(*bareMetalConfig)
 		if err != nil {
 			klog.Fatalf("read config file failed: %v", err)
 		}
 
-		config := exporter.StaticConfig{}
-		if err := yaml.Unmarshal(raw, &config); err != nil {
+		if err := yaml.Unmarshal(raw, &nebulaExporter.Config); err != nil {
 			klog.Fatalf("unmarshal failed: %v", err)
-		}
-
-		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *cluster, *listenAddr, nil, config, *maxRequest)
-		if err != nil {
-			klog.Fatal(err)
 		}
 	} else {
 		config, err := buildConfig(*kubeconfig)
@@ -83,10 +107,11 @@ func main() {
 			klog.Fatalf("create k8s client failed: %v", err)
 		}
 
-		nebulaExporter, err = exporter.NewNebulaExporter(*namespace, *cluster, *listenAddr, restClient, exporter.StaticConfig{}, *maxRequest)
-		if err != nil {
-			klog.Fatal(err)
-		}
+		nebulaExporter.Client = restClient
+	}
+
+	if err := nebulaExporter.Initialize(*maxRequest); err != nil {
+		klog.Fatal(err)
 	}
 
 	klog.Infof("Providing metrics at %s/metrics", *listenAddr)
