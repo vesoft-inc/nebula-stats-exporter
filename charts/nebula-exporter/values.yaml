@@ -6,6 +6,11 @@ nameOverride: ""
 fullnameOverride: ""
 
 cluster: ""
+clusterLabelKey: ""
+selector: ""
+graphPortName: "http-graph"
+metaPortName: "http-meta"
+storagePortName: "http-storage"
 
 replicaCount: 1
 
@@ -18,7 +23,7 @@ startUp:
 image:
   repository: vesoft/nebula-stats-exporter
   tag: v3.1.0
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 serviceAccount:
   # Specifies whether a service account should be created

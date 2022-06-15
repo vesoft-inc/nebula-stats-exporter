@@ -18,53 +18,54 @@ import (
 )
 
 type NebulaExporter struct {
-	client        *kubernetes.Clientset
-	mux           *http.ServeMux
-	namespace     string
-	cluster       string
-	listenAddress string
-	registry      *prometheus.Registry
-	config        StaticConfig
+	Client          *kubernetes.Clientset
+	Namespace       string
+	Selector        string
+	Cluster         string
+	ClusterLabelKey string
+	GraphPortName   string
+	MetaPortName    string
+	StoragePortName string
+	ListenAddress   string
+	Config          StaticConfig
+	registry        *prometheus.Registry
+	mux             *http.ServeMux
 }
 
-func NewNebulaExporter(ns, cluster, listenAddr string, client *kubernetes.Clientset,
-	config StaticConfig, maxRequests int) (*NebulaExporter, error) {
-	exporter := &NebulaExporter{
-		namespace:     ns,
-		cluster:       cluster,
-		listenAddress: listenAddr,
-		client:        client,
-		config:        config,
-		mux:           http.NewServeMux(),
-		registry:      prometheus.NewRegistry(),
+func (e *NebulaExporter) Initialize(maxRequests int) error {
+	if e.ClusterLabelKey == "" {
+		e.ClusterLabelKey = ClusterLabelKey
 	}
 
-	if err := exporter.registry.Register(exporter); err != nil {
+	e.mux = http.NewServeMux()
+	e.registry = prometheus.NewRegistry()
+
+	if err := e.registry.Register(e); err != nil {
 		klog.Fatalf("Register Nebula Collector Failed: %v", err)
-		return nil, err
+		return err
 	}
 
 	handler := promhttp.HandlerFor(
-		prometheus.Gatherers{exporter.registry},
+		prometheus.Gatherers{e.registry},
 		promhttp.HandlerOpts{
 			ErrorLog:            log.NewErrorLogger(),
 			ErrorHandling:       promhttp.ContinueOnError,
 			MaxRequestsInFlight: maxRequests,
-			Registry:            exporter.registry,
+			Registry:            e.registry,
 		},
 	)
 
 	metricsHandler := promhttp.InstrumentMetricHandler(
-		exporter.registry, handler,
+		e.registry, handler,
 	)
 
-	exporter.mux.Handle("/metrics", metricsHandler)
+	e.mux.Handle("/metrics", metricsHandler)
 
-	exporter.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+	e.mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("ok"))
 	})
 
-	exporter.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	e.mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte(`
 				<html>
 				<head><title>Nebula Exporter </title></head>
@@ -76,30 +77,30 @@ func NewNebulaExporter(ns, cluster, listenAddr string, client *kubernetes.Client
 			`))
 	})
 
-	return exporter, nil
+	return nil
 }
 
-func (exporter *NebulaExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	exporter.mux.ServeHTTP(w, r)
+func (e *NebulaExporter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	e.mux.ServeHTTP(w, r)
 }
 
-func (exporter *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {}
+func (e *NebulaExporter) Describe(ch chan<- *prometheus.Desc) {}
 
-func (exporter *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
+func (e *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
 	now := time.Now()
 	klog.Infoln("Start collect")
 	defer func() {
 		klog.Infof("Complete collect, time elapse %s", time.Since(now))
 	}()
 
-	if exporter.client != nil {
-		exporter.CollectFromKubernetes(ch)
+	if e.Client != nil {
+		e.CollectFromKubernetes(ch)
 	} else {
-		exporter.CollectFromStaticConfig(ch)
+		e.CollectFromStaticConfig(ch)
 	}
 }
 
-func (exporter *NebulaExporter) CollectMetrics(
+func (e *NebulaExporter) CollectMetrics(
 	name string,
 	componentType string,
 	namespace string,
@@ -145,7 +146,7 @@ func (exporter *NebulaExporter) CollectMetrics(
 	}
 }
 
-func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
+func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
 	podIpAddress := instance.EndpointIP
 	podHttpPort := instance.EndpointPort
 
@@ -167,10 +168,10 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterNa
 				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
-			exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, rocksDBStatus, ch)
+			e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, rocksDBStatus, ch)
 		}()
 	}
-	
+
 	go func() {
 		defer wg.Done()
 		metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
@@ -178,7 +179,7 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterNa
 			klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, metrics, ch)
+		e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, metrics, ch)
 	}()
 
 	go func() {
@@ -187,13 +188,13 @@ func (exporter *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterNa
 		if !isNebulaComponentRunning(podIpAddress, podHttpPort) {
 			statusMetrics = "count=0"
 		}
-		exporter.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, []string{statusMetrics}, ch)
+		e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, []string{statusMetrics}, ch)
 	}()
 }
 
-func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
+func (e *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
 	var wg sync.WaitGroup
-	for _, cluster := range exporter.config.Clusters {
+	for _, cluster := range e.Config.Clusters {
 		cluster := cluster
 		if cluster.Name == "" {
 			cluster.Name = DefaultClusterName
@@ -203,19 +204,21 @@ func (exporter *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Met
 			if instance.Name == "" {
 				instance.Name = fmt.Sprintf("%s-%s", instance.EndpointIP, instance.ComponentType)
 			}
-			exporter.collect(&wg, NonNamespace, cluster.Name, instance, ch)
+			e.collect(&wg, NonNamespace, cluster.Name, instance, ch)
 		}
 	}
 
 	wg.Wait()
 }
 
-func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
+func (e *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 	listOpts := metav1.ListOptions{}
-	if exporter.cluster != "" {
-		listOpts.LabelSelector = fmt.Sprintf("%s=%s", ClusterLabelKey, exporter.cluster)
+
+	listOpts.LabelSelector = e.Selector
+	if listOpts.LabelSelector == "" && e.Cluster != "" {
+		listOpts.LabelSelector = fmt.Sprintf("%s=%s", e.ClusterLabelKey, e.Cluster)
 	}
-	podLists, err := exporter.client.CoreV1().Pods(exporter.namespace).List(context.TODO(), listOpts)
+	podLists, err := e.Client.CoreV1().Pods(e.Namespace).List(context.TODO(), listOpts)
 	if err != nil {
 		klog.Error(err)
 		return
@@ -225,34 +228,37 @@ func (exporter *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metri
 	for _, item := range podLists.Items {
 		pod := item
 
-		componentType, ok := pod.Labels[ComponentLabelKey]
-		if !ok {
-			continue
-		}
-
-		clusterName, ok := pod.Labels[ClusterLabelKey]
+		clusterName, ok := pod.Labels[e.ClusterLabelKey]
 		if !ok {
 			continue
 		}
 
 		podIpAddress := pod.Status.PodIP
-		podHttpPort := int32(0)
 		for _, port := range pod.Spec.Containers[0].Ports {
-			if port.Name == "http" {
-				podHttpPort = port.ContainerPort
+			if port.ContainerPort == 0 {
+				continue
+			}
+			var componentType string
+			switch {
+			case port.Name == e.GraphPortName:
+				componentType = ComponentGraphdLabelVal
+			case port.Name == e.MetaPortName:
+				componentType = ComponentMetadLabelVal
+			case port.Name == e.StoragePortName:
+				componentType = ComponentStoragedLabelVal
+			case port.Name == "http" && pod.Labels[ComponentLabelKey] != "":
+				componentType = pod.Labels[ComponentLabelKey]
+			}
+
+			if componentType != "" {
+				e.collect(&wg, pod.Namespace, clusterName, Instance{
+					Name:          pod.Name,
+					EndpointIP:    podIpAddress,
+					EndpointPort:  port.ContainerPort,
+					ComponentType: componentType,
+				}, ch)
 			}
 		}
-
-		if podHttpPort == 0 {
-			continue
-		}
-
-		exporter.collect(&wg, pod.Namespace, clusterName, Instance{
-			Name:          pod.Name,
-			EndpointIP:    podIpAddress,
-			EndpointPort:  podHttpPort,
-			ComponentType: componentType,
-		}, ch)
 	}
 
 	wg.Wait()

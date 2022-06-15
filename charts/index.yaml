@@ -3,9 +3,9 @@ entries:
   nebula-exporter:
   - apiVersion: v1
     appVersion: v3.1.0
-    created: "2022-04-25T10:51:18.754717+08:00"
+    created: "2022-06-15T10:33:29.163134+08:00"
     description: Nebula Graph stats exporter for prometheus
-    digest: 55ff99bfb4504f857bb076c331ad6340c3e6fdb3dda825e04acaa48ff3e69580
+    digest: 33acc20133ed85eb88ee7bcd0dc35d6079af589b693e1ba9030d5f298130e1af
     home: https://nebula-graph.io
     icon: https://nebula-website-cn.oss-cn-hangzhou.aliyuncs.com/nebula-website/images/nebulagraph-logo.png
     keywords:
@@ -30,4 +30,4 @@ entries:
     urls:
     - https://vesoft-inc.github.io/nebula-stats-exporter/charts/nebula-exporter-3.1.0.tgz
     version: 3.1.0
-generated: "2022-04-25T10:51:18.754081+08:00"
+generated: "2022-06-15T10:33:29.162252+08:00"

@@ -6,6 +6,10 @@ const (
 	ComponentLabelKey = "app.kubernetes.io/component"
 	ClusterLabelKey   = "app.kubernetes.io/cluster"
 
+	ComponentGraphdLabelVal   = "graphd"
+	ComponentMetadLabelVal    = "metad"
+	ComponentStoragedLabelVal = "storaged"
+
 	// FQNamespace represents the prometheus FQName
 	FQNamespace  = "nebula"
 	NonNamespace = "none_namespace"
