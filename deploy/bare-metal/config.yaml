@@ -29,3 +29,15 @@ clusters:
         endpointIP: 192.168.10.133
         endpointPort: 19779
         componentType: storaged
+      - name: meta-listener-0
+        endpointIP: 192.168.10.134
+        endpointPort: 19569
+        componentType: meta_listener
+      - name: storage-listener-0
+        endpointIP: 192.168.10.134
+        endpointPort: 19789
+        componentType: storage_listener
+      - name: drainer0
+        endpointIP: 192.168.10.134
+        endpointPort: 19889
+        componentType: drainer
