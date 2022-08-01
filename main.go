@@ -96,6 +96,10 @@ func main() {
 		if err := yaml.Unmarshal(raw, &nebulaExporter.Config); err != nil {
 			klog.Fatalf("unmarshal failed: %v", err)
 		}
+
+		if err := nebulaExporter.Config.Validate(); err != nil {
+			klog.Fatalf("bare-metal config validation failed: %v", err)
+		}
 	} else {
 		config, err := buildConfig(*kubeconfig)
 		if err != nil {

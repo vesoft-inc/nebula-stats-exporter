@@ -1,5 +1,7 @@
 package exporter
 
+import "fmt"
+
 const (
 	DefaultClusterName = "default"
 
@@ -13,6 +15,13 @@ const (
 	// FQNamespace represents the prometheus FQName
 	FQNamespace  = "nebula"
 	NonNamespace = "none_namespace"
+
+	ComponentTypeGraphd          = "graphd"
+	ComponentTypeMetad           = "metad"
+	ComponentTypeStoraged        = "storaged"
+	ComponentTypeMetaListener    = "meta_listener"
+	ComponentTypeStorageListener = "storage_listener"
+	ComponentTypeDrainer         = "drainer"
 )
 
 type (
@@ -33,3 +42,19 @@ type (
 		ComponentType string `yaml:"componentType"`
 	}
 )
+
+func (s *StaticConfig) Validate() error {
+	for _, cluster := range s.Clusters {
+		for _, instance := range cluster.Instances {
+			switch instance.ComponentType {
+			case ComponentTypeGraphd, ComponentTypeMetad, ComponentTypeStoraged, ComponentTypeMetaListener, ComponentTypeStorageListener, ComponentTypeDrainer:
+				continue
+			default:
+				return fmt.Errorf("invalid component type: %s", instance.ComponentType)
+			}
+		}
+
+	}
+
+	return nil
+}

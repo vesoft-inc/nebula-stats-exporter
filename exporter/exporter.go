@@ -159,7 +159,7 @@ func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName stri
 		instance.Name, instance.EndpointPort)
 
 	wg.Add(2)
-	if instance.ComponentType == "storaged" {
+	if instance.ComponentType == ComponentTypeStoraged {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
