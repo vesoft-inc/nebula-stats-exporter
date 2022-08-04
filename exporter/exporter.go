@@ -134,7 +134,7 @@ func (e *NebulaExporter) CollectMetrics(
 
 		ch <- prometheus.MustNewConstMetric(
 			prometheus.NewDesc(
-				fmt.Sprintf("%s_%s_%s", FQNamespace, componentType, strings.ReplaceAll(metric.Name, ".", "_")),
+				fmt.Sprintf("%s_%s_%s", FQNamespace, strings.ReplaceAll(componentType, "-", "_"), strings.ReplaceAll(metric.Name, ".", "_")),
 				"",
 				labels,
 				nil,
