@@ -19,9 +19,9 @@ const (
 	ComponentTypeGraphd          = "graphd"
 	ComponentTypeMetad           = "metad"
 	ComponentTypeStoraged        = "storaged"
-	ComponentTypeMetaListener    = "meta_listener"
-	ComponentTypeStorageListener = "storage_listener"
-	ComponentTypeDrainer         = "drainer"
+	ComponentTypeMetaListener    = "metad-listener"
+	ComponentTypeStorageListener = "storaged-listener"
+	ComponentTypeDrainer         = "drainerd"
 )
 
 type (
