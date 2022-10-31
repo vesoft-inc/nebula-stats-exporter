@@ -22,7 +22,7 @@ startUp:
 
 image:
   repository: vesoft/nebula-stats-exporter
-  tag: v3.1.0
+  tag: v3.3.0
   pullPolicy: Always
 
 serviceAccount:

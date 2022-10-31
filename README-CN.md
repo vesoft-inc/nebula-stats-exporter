@@ -15,6 +15,9 @@
 - Metad 的 metrics
 - Storaged 的 metrics
 - Stroaged 内置 rocksdb 的 metrics
+- Metad Listener 的 metrics
+- Storaged Listener 的 metrics
+- Draienrd 的 metrics
 
 ## 构建运行 exporter
 
@@ -71,12 +74,12 @@ scrape_configs:
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.3.0 --bare-metal --bare-metal-config=/config.yaml
 
 # 例如:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.3.0 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## 在裸机上运行
