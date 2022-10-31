@@ -59,12 +59,12 @@ _详情请见 [Install Nebula Cluster with helm](https://github.com/vesoft-inc/n
 
 ```shell
 $ helm install nebula-exporter nebula-exporter --repo https://vesoft-inc.github.io/nebula-stats-exporter/charts \
-    --namespace=example1 --version=v3.1.0 \
+    --namespace=example1 --version=v3.3.0 \
     --set serviceMonitor.enabled=true \
     --set serviceMonitor.prometheusServiceMatchLabels.release=prometheus
 
 $ helm install nebula-exporter nebula-exporter --repo https://vesoft-inc.github.io/nebula-stats-exporter/charts \
-    --namespace=example2 --version=v3.1.0 \
+    --namespace=example2 --version=v3.3.0 \
     --set serviceMonitor.enabled=true \
     --set serviceMonitor.prometheusServiceMatchLabels.release=prometheus
 ```

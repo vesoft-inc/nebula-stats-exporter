@@ -20,7 +20,7 @@ _See [helm repo](https://helm.sh/docs/helm/helm_repo/) for command documentation
 
 ```shell
 export NEBULA_EXPORTER_NAMESPACE=nebula     # the namespace you want to install the nebula exporter
-export CHART_VERSION=v3.1.0                 # the chart version of Nebula Exporter
+export CHART_VERSION=v3.3.0                 # the chart version of Nebula Exporter
 
 $ kubectl create namespace "${NEBULA_EXPORTER_NAMESPACE}" # If you have already created it, please skip.
 $ helm install nebula-exporter nebula-exporter/nebula-exporter \
@@ -35,7 +35,7 @@ nebula-exporter-5964b765c9-4xfkm   1/1     Running   0          44s
 
 Notes:
 
-* `${chart_version}` represents the chart version of Nebula Exporter. For example, v3.1.0. You can view the currently supported versions by running the `helm search repo -l nebula-exporter` command.
+* `${chart_version}` represents the chart version of Nebula Exporter. For example, v3.3.0. You can view the currently supported versions by running the `helm search repo -l nebula-exporter` command.
 
 _See [helm install](https://helm.sh/docs/helm/helm_install/) for command documentation._
 
@@ -85,7 +85,7 @@ The following table lists is the configurable parameters of the chart and their 
 | `startUp.listenPort` | The nebula metrics server listening port | `9100` |
 | `startUp.maxRequests` | Maximum number of parallel scrape requests, use 0 for no limit | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
-| `image.tag` | Nebula stats exporter image tag | `v3.1.0` |
+| `image.tag` | Nebula stats exporter image tag | `v3.3.0` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |
 | `serviceAccount.create` | Specifies whether a service account should be created | `true` |
 | `serviceAccount.annotations` | Annotations to add to the service account | `{}` |

@@ -15,6 +15,9 @@ The metrics currently collected are:
 - Metad's metrics
 - Storaged's metrics
 - Storaged's rocksdb metrics
+- Metad Listener's metrics
+- Storaged Listener's metrics
+- Draienrd's metrics
 
 ## Building and running the exporter
 
@@ -71,12 +74,12 @@ And adjust the host name `NEBULA_STATS_EXPORTER_HOSTNAME` accordingly.
 ```shell
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "<<PATH_OF_CONFIG_FILE>>:/config.yaml" \
-    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.3.0 --bare-metal --bare-metal-config=/config.yaml
 
 # For example:
 $ docker run -d --restart=always --name nebula-stats-exporter -p 9100:9100 \
     -v "$(pwd)/deploy/bare-metal/config.yaml:/config.yaml" \
-    vesoft/nebula-stats-exporter:v3.1.0 --bare-metal --bare-metal-config=/config.yaml
+    vesoft/nebula-stats-exporter:v3.3.0 --bare-metal --bare-metal-config=/config.yaml
 ```
 
 ## Run on Bare Metal
