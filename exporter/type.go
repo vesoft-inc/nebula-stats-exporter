@@ -44,6 +44,9 @@ type (
 )
 
 func (s *StaticConfig) Validate() error {
+	if len(s.Clusters) == 0 {
+		return fmt.Errorf("at least one cluster in config")
+	}
 	for _, cluster := range s.Clusters {
 		for _, instance := range cluster.Instances {
 			switch instance.ComponentType {
