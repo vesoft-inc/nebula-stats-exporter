@@ -45,7 +45,7 @@ type (
 
 func (s *StaticConfig) Validate() error {
 	if len(s.Clusters) == 0 {
-		return fmt.Errorf("at least one cluster in config")
+		return fmt.Errorf("at least one cluster should be configured")
 	}
 	for _, cluster := range s.Clusters {
 		for _, instance := range cluster.Instances {
