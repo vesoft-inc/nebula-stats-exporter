@@ -449,7 +449,7 @@
         },
         {
           "exemplar": true,
-          "expr": "nebula_graphd_query_latency_us_p95_53{namespace=\"$namespace\", cluster=\"$cluster\"}",
+          "expr": "nebula_graphd_query_latency_us_p95_5{namespace=\"$namespace\", cluster=\"$cluster\"}",
           "hide": false,
           "interval": "30s",
           "legendFormat": "",
