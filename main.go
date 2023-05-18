@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
+	"regexp"
 
 	"github.com/prometheus/common/version"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -70,11 +71,27 @@ func main() {
 		bareMetalConfig = kingpin.Flag("bare-metal-config",
 			"The bare metal config file").
 			Default("/config.yaml").String()
+
+		collect = kingpin.Flag("collect",
+			"The regex to filter metrics").
+			Default("").String()
+
+		ignore = kingpin.Flag("ignore",
+			"The regex to ignore metrics").
+			Default("").String()
 	)
 
 	kingpin.Version(version.Print("nebula-stats-exporter"))
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
+
+	var collectPattern, ignorePattern *regexp.Regexp
+	if *collect != "" {
+		collectPattern = regexp.MustCompile(*collect)
+	}
+	if *ignore != "" {
+		ignorePattern = regexp.MustCompile(*ignore)
+	}
 
 	nebulaExporter := &exporter.NebulaExporter{
 		Namespace:       *namespace,
@@ -85,6 +102,8 @@ func main() {
 		MetaPortName:    *metaPortName,
 		StoragePortName: *storagePortName,
 		ListenAddress:   *listenAddr,
+		CollectPattern:  collectPattern,
+		IgnorePattern:   ignorePattern,
 	}
 
 	if *bareMetal {

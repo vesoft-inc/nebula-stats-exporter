@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"sync"
@@ -27,6 +28,8 @@ type NebulaExporter struct {
 	MetaPortName    string
 	StoragePortName string
 	ListenAddress   string
+	CollectPattern  *regexp.Regexp
+	IgnorePattern   *regexp.Regexp
 	Config          StaticConfig
 	registry        *prometheus.Registry
 	mux             *http.ServeMux
@@ -118,6 +121,19 @@ func (e *NebulaExporter) CollectMetrics(
 			continue
 		}
 
+		metricName := fmt.Sprintf("%s_%s_%s", FQNamespace, strings.ReplaceAll(componentType, "-", "_"), strings.ReplaceAll(metric.Name, ".", "_"))
+
+		if e.CollectPattern != nil {
+			if !e.CollectPattern.MatchString(metricName) {
+				continue
+			}
+		}
+		if e.IgnorePattern != nil {
+			if e.IgnorePattern.MatchString(metricName) {
+				continue
+			}
+		}
+
 		// TODO: uniform naming rules with _
 		labels := []string{"nebula_cluster", "componentType", "instanceName"}
 		labelValues := []string{cluster, componentType, name}
@@ -134,7 +150,7 @@ func (e *NebulaExporter) CollectMetrics(
 
 		ch <- prometheus.MustNewConstMetric(
 			prometheus.NewDesc(
-				fmt.Sprintf("%s_%s_%s", FQNamespace, strings.ReplaceAll(componentType, "-", "_"), strings.ReplaceAll(metric.Name, ".", "_")),
+				metricName,
 				"",
 				labels,
 				nil,
