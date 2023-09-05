@@ -104,7 +104,7 @@ func (e *NebulaExporter) Collect(ch chan<- prometheus.Metric) {
 }
 
 func (e *NebulaExporter) CollectMetrics(
-	name string,
+	instance Instance,
 	componentType string,
 	namespace string,
 	cluster string,
@@ -136,11 +136,16 @@ func (e *NebulaExporter) CollectMetrics(
 
 		// TODO: uniform naming rules with _
 		labels := []string{"nebula_cluster", "componentType", "instanceName"}
-		labelValues := []string{cluster, componentType, name}
+		labelValues := []string{cluster, componentType, instance.Name}
 
 		if namespace != NonNamespace {
 			labels = append(labels, "namespace")
 			labelValues = append(labelValues, namespace)
+		}
+
+		if namespace == NonNamespace {
+			labels = append(labels, "endpointIP")
+			labelValues = append(labelValues, instance.EndpointIP)
 		}
 
 		for key, value := range metric.Labels {
@@ -184,7 +189,7 @@ func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName stri
 				klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 				return
 			}
-			e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, rocksDBStatus, ch)
+			e.CollectMetrics(instance, instance.ComponentType, namespace, clusterName, rocksDBStatus, ch)
 		}()
 	}
 
@@ -195,7 +200,7 @@ func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName stri
 			klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
-		e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, metrics, ch)
+		e.CollectMetrics(instance, instance.ComponentType, namespace, clusterName, metrics, ch)
 	}()
 
 	go func() {
@@ -204,7 +209,7 @@ func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName stri
 		if !isNebulaComponentRunning(podIpAddress, podHttpPort) {
 			statusMetrics = "count=0"
 		}
-		e.CollectMetrics(instance.Name, instance.ComponentType, namespace, clusterName, []string{statusMetrics}, ch)
+		e.CollectMetrics(instance, instance.ComponentType, namespace, clusterName, []string{statusMetrics}, ch)
 	}()
 }
 
