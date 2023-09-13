@@ -144,7 +144,7 @@ func (e *NebulaExporter) CollectMetrics(
 		}
 
 		if namespace == NonNamespace {
-			labels = append(labels, "endpointIP")
+			labels = append(labels, "host")
 			labelValues = append(labelValues, instance.EndpointIP)
 		}
 
