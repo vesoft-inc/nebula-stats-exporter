@@ -1,5 +1,7 @@
-FROM centos:7.6.1810
+FROM alpine:3.18.2
 
-COPY nebula-stats-exporter /
-RUN chmod +x /nebula-stats-exporter
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
+COPY bin/${TARGETPLATFORM}/nebula-stats-exporter /
 ENTRYPOINT  [ "/nebula-stats-exporter" ]
