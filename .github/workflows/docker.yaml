@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    types: [ synchronize, opened, reopened, labeled ]
+    branches:
+      - master
 
 jobs:
   docker:
