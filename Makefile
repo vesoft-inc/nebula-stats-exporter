@@ -1,8 +1,9 @@
 PROJECT="nebula-exporter"
 
 GO ?= go
-IMAGE_TAG ?= v3.3.0
-DOCKER_REPO=vesoft
+IMAGE_TAG ?= latest
+DOCKER_REPO ?= reg.vesoft-inc.com/cloud-dev
+IMAGE_REPOSITORY ?= $(DOCKER_REPO)/nebula-stats-exporter
 
 export GO111MODULE := on
 LDFLAGS = $(if $(DEBUGGER),,-s -w)
@@ -51,11 +52,11 @@ image-multiarch:
 			--push \
 			--progress plain \
 			--platform $(BUILDX_PLATFORMS) \
-			-t "${DOCKER_REPO}/nebula-stats-exporter:${IMAGE_TAG}" .
+			-t "${IMAGE_REPOSITORY}:${IMAGE_TAG}" .
 
 clean:
 	rm -rf nebula-stats-exporter
-	docker rmi -f $(DOCKER_REPO)/nebula-stats-exporter:$(IMAGE_TAG)
+	docker rmi -f $(IMAGE_REPOSITORY):$(IMAGE_TAG)
 
 fmt:
 	go fmt .
