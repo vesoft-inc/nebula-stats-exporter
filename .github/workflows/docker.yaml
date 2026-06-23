@@ -102,4 +102,9 @@ jobs:
           IMAGE_REPOSITORY: ${{ steps.image.outputs.repository }}
           IMAGE_TAG: ${{ steps.image.outputs.tag }}
         run: |
-          make image-multiarch
+          docker_repo="${IMAGE_REPOSITORY%/nebula-stats-exporter}"
+
+          make image-multiarch \
+            DOCKER_REPO="${docker_repo}" \
+            IMAGE_REPOSITORY="${IMAGE_REPOSITORY}" \
+            IMAGE_TAG="${IMAGE_TAG}"
