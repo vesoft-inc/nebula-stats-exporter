@@ -39,6 +39,7 @@ spec:
             - "--meta-port-name={{ .Values.metaPortName }}"
             - "--storage-port-name={{ .Values.storagePortName }}"
             - "--max-request={{ .Values.startUp.maxRequests }}"
+            - "--max-metric-requests={{ .Values.startUp.maxMetricRequests }}"
           ports:
             - name: exporter-port
               containerPort: {{ .Values.startUp.listenPort }}
