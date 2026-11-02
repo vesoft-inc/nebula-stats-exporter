@@ -3,8 +3,9 @@ package exporter
 import (
 	"context"
 	"fmt"
-	pcg "github.com/prometheus/client_model/go"
+	"log"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"sync"
@@ -12,27 +13,31 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	pcg "github.com/prometheus/client_model/go"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 )
 
+const defaultMaxConcurrentMetricRequests = 40
+
 type NebulaExporter struct {
-	Client          *kubernetes.Clientset
-	Namespace       string
-	Selector        string
-	Cluster         string
-	ClusterLabelKey string
-	GraphPortName   string
-	MetaPortName    string
-	StoragePortName string
-	ListenAddress   string
-	CollectPattern  *regexp.Regexp
-	IgnorePattern   *regexp.Regexp
-	Config          StaticConfig
-	registry        *prometheus.Registry
-	mux             *http.ServeMux
+	Client *kubernetes.Clientset
+	// MaxConcurrentMetricRequests bounds concurrent Nebula metrics requests. Zero uses the default.
+	MaxConcurrentMetricRequests int
+	Namespace                   string
+	Selector                    string
+	Cluster                     string
+	ClusterLabelKey             string
+	GraphPortName               string
+	MetaPortName                string
+	StoragePortName             string
+	ListenAddress               string
+	CollectPattern              *regexp.Regexp
+	IgnorePattern               *regexp.Regexp
+	Config                      StaticConfig
+	registry                    *prometheus.Registry
+	mux                         *http.ServeMux
 }
 
 func (e *NebulaExporter) Initialize(maxRequests int) error {
@@ -51,7 +56,7 @@ func (e *NebulaExporter) Initialize(maxRequests int) error {
 	handler := promhttp.HandlerFor(
 		prometheus.Gatherers{e.registry},
 		promhttp.HandlerOpts{
-			ErrorLog:            log.NewErrorLogger(),
+			ErrorLog:            log.New(os.Stderr, "", 0),
 			ErrorHandling:       promhttp.ContinueOnError,
 			MaxRequestsInFlight: maxRequests,
 			Registry:            e.registry,
@@ -204,7 +209,7 @@ func (e *NebulaExporter) CollectMetrics(
 	}
 }
 
-func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
+func (e *NebulaExporter) collect(wg *sync.WaitGroup, semaphore chan struct{}, namespace, clusterName string, instance Instance, ch chan<- prometheus.Metric) {
 	podIpAddress := instance.EndpointIP
 	podHttpPort := instance.EndpointPort
 
@@ -212,27 +217,31 @@ func (e *NebulaExporter) collect(wg *sync.WaitGroup, namespace, clusterName stri
 		return
 	}
 
+	semaphore <- struct{}{}
+
 	klog.Infof("Collect %s:%s %s:%d Metrics ",
 		clusterName, strings.ToUpper(instance.ComponentType),
 		instance.Name, instance.EndpointPort)
 
-	wg.Add(1)
+	wg.Go(func() {
+		defer func() {
+			<-semaphore
+		}()
 
-	go func() {
-		defer wg.Done()
 		metrics, err := getNebulaMetrics(podIpAddress, podHttpPort)
 		if err != nil {
 			klog.Errorf("get query metrics from %s:%d failed: %v", podIpAddress, podHttpPort, err)
 			return
 		}
 		e.CollectMetrics(instance, instance.ComponentType, namespace, clusterName, metrics, ch)
-	}()
+	})
 }
 
 func (e *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
 	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, e.maxMetricRequests())
+
 	for _, cluster := range e.Config.Clusters {
-		cluster := cluster
 		if cluster.Name == "" {
 			cluster.Name = DefaultClusterName
 		}
@@ -241,7 +250,7 @@ func (e *NebulaExporter) CollectFromStaticConfig(ch chan<- prometheus.Metric) {
 			if instance.Name == "" {
 				instance.Name = fmt.Sprintf("%s-%s", instance.EndpointIP, instance.ComponentType)
 			}
-			e.collect(&wg, NonNamespace, cluster.Name, instance, ch)
+			e.collect(&wg, semaphore, NonNamespace, cluster.Name, instance, ch)
 		}
 	}
 
@@ -262,6 +271,8 @@ func (e *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 	}
 
 	var wg sync.WaitGroup
+	semaphore := make(chan struct{}, e.maxMetricRequests())
+
 	for _, item := range podLists.Items {
 		pod := item
 
@@ -288,7 +299,7 @@ func (e *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 			}
 
 			if componentType != "" {
-				e.collect(&wg, pod.Namespace, clusterName, Instance{
+				e.collect(&wg, semaphore, pod.Namespace, clusterName, Instance{
 					Name:          pod.Name,
 					EndpointIP:    podIpAddress,
 					EndpointPort:  port.ContainerPort,
@@ -299,4 +310,12 @@ func (e *NebulaExporter) CollectFromKubernetes(ch chan<- prometheus.Metric) {
 	}
 
 	wg.Wait()
+}
+
+func (e *NebulaExporter) maxMetricRequests() int {
+	if e.MaxConcurrentMetricRequests > 0 {
+		return e.MaxConcurrentMetricRequests
+	}
+
+	return defaultMaxConcurrentMetricRequests
 }

@@ -84,6 +84,7 @@ $ helm show values nebula-exporter/nebula-exporter
 | `replicaCount` | Nebula stats exporter 的 replica 数 | `1` |
 | `startUp.listenPort` | Nebula metrics 服务监听端口 | `9100` |
 | `startUp.maxRequests` | 最大并行抓取请求数，使用 0 则不限制 | `40` |
+| `startUp.maxMetricRequests` | 每次抓取 Nebula 指标请求的最大并发数 | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
 | `image.tag` | Nebula stats exporter image tag | `v3.3.0` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |

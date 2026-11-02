@@ -84,6 +84,7 @@ The following table lists is the configurable parameters of the chart and their 
 | `replicaCount` | Nebula stats exporter replica number | `1` |
 | `startUp.listenPort` | The nebula metrics server listening port | `9100` |
 | `startUp.maxRequests` | Maximum number of parallel scrape requests, use 0 for no limit | `40` |
+| `startUp.maxMetricRequests` | Maximum number of concurrent Nebula metrics requests per scrape | `40` |
 | `image.repository` | Nebula stats exporter image repository | `vesoft/nebula-stats-exporter` |
 | `image.tag` | Nebula stats exporter image tag | `v3.3.0` |
 | `image.pullPolicy` | Nebula stats exporter imagePullPolicy | `IfNotPresent` |

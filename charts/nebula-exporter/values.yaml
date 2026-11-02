@@ -19,6 +19,8 @@ startUp:
   listenPort: 9100
   # Maximum number of parallel scrape requests, use 0 for no limit.
   maxRequests: 40
+  # Maximum number of concurrent Nebula metrics requests per scrape.
+  maxMetricRequests: 40
 
 image:
   repository: vesoft/nebula-stats-exporter
@@ -87,4 +89,3 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
-

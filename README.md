@@ -34,7 +34,9 @@ Flags:
       --namespace="default"     The namespace which nebula in
       --cluster=""              The cluster name for nebula, default get metrics of all clusters in the namespace.
       --kube-config=""          The kubernetes config file
-      --max-request=40          Maximum number of parallel scrape requests. Use 0 to disable.
+      --max-request=10          Maximum number of parallel scrape requests. Use 0 to disable.
+      --max-metric-requests=40
+                                Maximum number of concurrent Nebula metrics requests per scrape.
       --bare-metal              Whether running in bare metal environment
       --bare-metal-config="/config.yaml"
                                 The bare metal config file

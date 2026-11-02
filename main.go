@@ -1,18 +1,18 @@
 package main
 
 import (
-	"io/ioutil"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"regexp"
 
+	"github.com/alecthomas/kingpin/v2"
 	"github.com/prometheus/common/version"
-	"gopkg.in/alecthomas/kingpin.v2"
 	"gopkg.in/yaml.v2"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog"
+	"k8s.io/klog/v2"
 
 	"github.com/vesoft-inc/nebula-stats-exporter/exporter"
 )
@@ -62,6 +62,10 @@ func main() {
 
 		maxRequest = kingpin.Flag("max-request",
 			"Maximum number of parallel scrape requests. Use 0 to disable.").
+			Default("10").Int()
+
+		maxMetricRequests = kingpin.Flag("max-metric-requests",
+			"Maximum number of concurrent Nebula metrics requests per scrape.").
 			Default("40").Int()
 
 		bareMetal = kingpin.Flag("bare-metal",
@@ -85,6 +89,10 @@ func main() {
 	kingpin.HelpFlag.Short('h')
 	kingpin.Parse()
 
+	if *maxMetricRequests <= 0 {
+		klog.Fatal("--max-metric-requests must be greater than 0")
+	}
+
 	var collectPattern, ignorePattern *regexp.Regexp
 	if *collect != "" {
 		collectPattern = regexp.MustCompile(*collect)
@@ -94,20 +102,21 @@ func main() {
 	}
 
 	nebulaExporter := &exporter.NebulaExporter{
-		Namespace:       *namespace,
-		Selector:        *selector,
-		Cluster:         *cluster,
-		ClusterLabelKey: *clusterLabelKey,
-		GraphPortName:   *graphPortName,
-		MetaPortName:    *metaPortName,
-		StoragePortName: *storagePortName,
-		ListenAddress:   *listenAddr,
-		CollectPattern:  collectPattern,
-		IgnorePattern:   ignorePattern,
+		Namespace:                   *namespace,
+		Selector:                    *selector,
+		Cluster:                     *cluster,
+		ClusterLabelKey:             *clusterLabelKey,
+		GraphPortName:               *graphPortName,
+		MetaPortName:                *metaPortName,
+		StoragePortName:             *storagePortName,
+		ListenAddress:               *listenAddr,
+		CollectPattern:              collectPattern,
+		IgnorePattern:               ignorePattern,
+		MaxConcurrentMetricRequests: *maxMetricRequests,
 	}
 
 	if *bareMetal {
-		raw, err := ioutil.ReadFile(*bareMetalConfig)
+		raw, err := os.ReadFile(*bareMetalConfig)
 		if err != nil {
 			klog.Fatalf("read config file failed: %v", err)
 		}

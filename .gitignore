@@ -10,7 +10,11 @@
 # Dependency directories (remove the comment below to include it)
 vendor/
 .idea/
-# nebula-stats-exporter exec binary file
-nebula-stats-exporter
+
+bin/
+
 config.yaml
+
+plans/
+
 
